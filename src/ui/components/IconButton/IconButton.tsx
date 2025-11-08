@@ -5,9 +5,9 @@ interface Props {
   icon: React.ReactNode;
 }
 
-export default function IconButton({ icon }: Props) {
+export default function IconButton({ icon, onClick }: Props) {
   return (
-    <Button size="icon-sm" variant="outline">
+    <Button size="icon-sm" variant="outline" onClick={onClick}>
       {icon}
     </Button>
   );

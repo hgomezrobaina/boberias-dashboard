@@ -1,16 +1,18 @@
-import { supabase } from "@/lib/supabase";
+import type { Product } from "@/lib/product";
 import FormModal from "@/modal/components/FormModal/FormModal";
+import ProductForm from "../../shared/components/ProductForm/ProductForm";
 import useModal from "@/modal/hooks/useModal";
 import { useState } from "react";
-import toast from "react-hot-toast";
 import useProductForm from "../../hooks/useProductForm";
-import ProductForm from "../../shared/components/ProductForm/ProductForm";
+import toast from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
+  product: Product;
   refetch: () => void;
 }
 
-export default function InsertProduct({ refetch }: Props) {
+export default function EditProduct({ product, refetch }: Props) {
   const { handleClose } = useModal();
 
   const [loading, setLoading] = useState(false);
@@ -30,13 +32,13 @@ export default function InsertProduct({ refetch }: Props) {
     stock,
     expirationDate,
     setExpirationDate,
-  } = useProductForm({});
+  } = useProductForm({ product: product });
 
   const handleSubmit = () => {
     setLoading(true);
 
     const defaultError = () => {
-      toast.error("Hubo un error al insertar el producto");
+      toast.error("Hubo un error al editar el producto");
 
       setLoading(false);
     };
@@ -44,15 +46,15 @@ export default function InsertProduct({ refetch }: Props) {
     supabase
       .from("product")
       .select("*")
-      .eq("code", code.trim())
+      .eq("code", product.code)
       .then((res) => {
         if (res.error === null) {
-          const exists = res.data.length > 0;
+          const exists = res.data.some((p) => p.id === product.id);
 
-          if (!exists) {
+          if (exists) {
             supabase
               .from("product")
-              .insert([
+              .update([
                 {
                   cost_price: costPrice,
                   sell_price: sellPrice,
@@ -64,11 +66,12 @@ export default function InsertProduct({ refetch }: Props) {
                   expiration_date: expirationDate,
                 },
               ])
+              .eq("id", product.id)
               .then((res) => {
                 if (res.error) {
                   defaultError();
                 } else {
-                  toast.success("Producto insertado exitosamente");
+                  toast.success("Producto editado exitosamente");
 
                   setLoading(false);
 

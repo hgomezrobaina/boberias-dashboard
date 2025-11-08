@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 interface Props {
-  value?: { value: Date; onChange: (v: Date) => void };
+  value?: { value: Date | null; onChange: (v: Date) => void };
 }
 
 export default function DatePicker({ value }: Props) {
@@ -34,7 +34,9 @@ export default function DatePicker({ value }: Props) {
         <Calendar
           mode="single"
           required
-          selected={value?.value}
+          selected={
+            value ? (value.value === null ? undefined : value.value) : undefined
+          }
           onSelect={value?.onChange}
         />
       </PopoverContent>

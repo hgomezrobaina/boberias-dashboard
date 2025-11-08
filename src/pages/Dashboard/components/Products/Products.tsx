@@ -5,10 +5,16 @@ import Card from "@/ui/components/Card/Card";
 import Table from "@/ui/components/Table/Table";
 import Modals from "./components/Modals/Modals";
 import useModal from "@/modal/hooks/useModal";
-import { InsertProductModalProps } from "./domain/modal";
+import {
+  DeleteProductModalProps,
+  EditProductModalProps,
+  InsertProductModalProps,
+} from "./domain/modal";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/lib/product";
+import IconButton from "@/ui/components/IconButton/IconButton";
+import { Edit, Trash } from "lucide-react";
 
 export default function Products() {
   const { handleOpenModal } = useModal();
@@ -22,9 +28,13 @@ export default function Products() {
     supabase
       .from("product")
       .select("*")
+      .eq("active", true)
+      .order("id", { ascending: false })
       .then((res) => {
         if (res.data) {
           setProducts(res.data);
+        } else {
+          setProducts([]);
         }
 
         setLoading(false);
@@ -66,6 +76,26 @@ export default function Products() {
             {
               name: "Cantidad",
               cell: ({ row }) => NumberTextBuilder.execute(row.stock),
+            },
+            {
+              name: "",
+              cell: ({ row }) => (
+                <div className="flex items-center gap-x-2">
+                  <IconButton
+                    icon={<Edit className="w-6 h-6" />}
+                    onClick={() =>
+                      handleOpenModal(new EditProductModalProps(row))
+                    }
+                  />
+
+                  <IconButton
+                    icon={<Trash className="w-6 h-6" />}
+                    onClick={() =>
+                      handleOpenModal(new DeleteProductModalProps(row.id))
+                    }
+                  />
+                </div>
+              ),
             },
           ]}
         />
