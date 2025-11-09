@@ -1,16 +1,23 @@
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 
 interface Props {
   label: string;
   children?: React.ReactNode;
+  extra?: React.ReactNode;
 }
 
-export default function FormInput({ label, children }: Props) {
+export default function FormInput({ label, children, extra }: Props) {
   return (
-    <Field className="mb-5">
-      <FieldLabel className="font-medium!">{label}</FieldLabel>
+    <div className="mb-5">
+      <Field className="mb-3" orientation={"horizontal"}>
+        <FieldContent>
+          <FieldLabel className="font-medium!">{label}</FieldLabel>
+        </FieldContent>
+
+        {extra}
+      </Field>
 
       {children}
-    </Field>
+    </div>
   );
 }

@@ -28,7 +28,9 @@ export default function Dashboard() {
 
         <Charts />
 
-        {section === DASHBOARD_SECTION.SELLS && <Sells />}
+        {section === DASHBOARD_SECTION.SELLS && (
+          <Sells month={month} year={year} />
+        )}
 
         {section === DASHBOARD_SECTION.PRODUCTS && <Products />}
       </main>

@@ -4,11 +4,16 @@ import { Toaster } from "react-hot-toast";
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Login from "./pages/Login/Login";
+import PrivateRoute from "./pages/PrivateRoute/PrivateRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
   },
   { path: "/login", element: <Login /> },
 ]);

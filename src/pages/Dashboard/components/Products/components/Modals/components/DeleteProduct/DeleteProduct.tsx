@@ -42,7 +42,7 @@ export default function DeleteProduct({ id, refetch }: Props) {
     <FormModal
       loading={loading}
       onSubmit={handleSubmit}
-      title="Eliminar Producto"
+      title="Eliminar producto"
     >
       <p className="text-base text-gray-700">
         ¿Seguro que desea eliminar este producto?
