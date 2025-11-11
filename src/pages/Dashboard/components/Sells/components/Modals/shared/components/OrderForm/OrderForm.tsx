@@ -61,7 +61,7 @@ export default function OrderForm({ form }: Props) {
                       const price = PriceTextBuilder.build(o.sell_price);
 
                       return {
-                        label: `${o.name} (${price})`,
+                        label: `${o.code} - ${o.name} (${price})`,
                         value: o.id.toString(),
                       };
                     }
