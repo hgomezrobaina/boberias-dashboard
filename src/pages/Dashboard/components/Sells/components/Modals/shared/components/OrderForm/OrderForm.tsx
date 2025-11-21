@@ -106,6 +106,19 @@ export default function OrderForm({ form }: Props) {
               ),
             },
             {
+              name: "Precio",
+              cell: ({ row }) => (
+                <InputNumber
+                  min={1}
+                  value={{
+                    onChange: (v) =>
+                      form.orderProducts.onChangePrice(row.product.id, v),
+                    value: row.price,
+                  }}
+                />
+              ),
+            },
+            {
               name: "",
               cell: ({ row: o }) => (
                 <IconButton
