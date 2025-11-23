@@ -6,7 +6,6 @@ import OrderForm from "../../shared/components/OrderForm/OrderForm";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import useModal from "@/modal/hooks/useModal";
-import Decimal from "decimal.js";
 
 interface Props {
   order: Order;
@@ -23,16 +22,7 @@ export default function EditOrder({ order, refetch }: Props) {
   async function handleSubmit() {
     setLoading(true);
 
-    const sumProducts = form.orderProducts.value.reduce(
-      (a, b) => new Decimal(b.price).mul(b.count).plus(a).toNumber(),
-      0
-    );
-    const sumPayments = form.payments.value.reduce(
-      (a, b) => new Decimal(b.amount).plus(a).toNumber(),
-      0
-    );
-
-    if (sumPayments !== sumProducts) {
+    if (form.sumPayments !== form.sumProducts) {
       toast.error(
         "La cantidad de dinero recolectado en los productos debe ser igual al pagado"
       );

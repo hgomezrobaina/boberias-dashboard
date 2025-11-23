@@ -1,3 +1,4 @@
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import type { OrderForm } from "@/lib/order";
 import { ORDER_TYPE, orderTypes, OrderTypeTextBuiler } from "@/lib/order-type";
 import {
@@ -14,7 +15,7 @@ import InputNumber from "@/ui/components/InputNumber/InputNumber";
 import SearchSelect from "@/ui/components/SearchSelect/SearchSelect";
 import Select from "@/ui/components/Select/Select";
 import Table from "@/ui/components/Table/Table";
-import { Trash } from "lucide-react";
+import { Trash, Wallet } from "lucide-react";
 
 interface Props {
   form: OrderForm;
@@ -50,6 +51,17 @@ export default function OrderForm({ form }: Props) {
             : undefined
         }
       >
+        {form.sumProducts > 0 && (
+          <Alert className="mb-1">
+            <Wallet />
+
+            <AlertTitle>
+              La suma de total de los productos insertados es{" "}
+              {PriceTextBuilder.build(form.sumProducts)}
+            </AlertTitle>
+          </Alert>
+        )}
+
         <Table
           data={form.orderProducts.value}
           columns={[
@@ -133,6 +145,17 @@ export default function OrderForm({ form }: Props) {
       </ArrayInput>
 
       <ArrayInput label="Pagos" onAdd={form.payments.onAdd}>
+        {form.sumPayments > 0 && (
+          <Alert className="mb-1">
+            <Wallet />
+
+            <AlertTitle>
+              La suma de total de los pagos insertados es{" "}
+              {PriceTextBuilder.build(form.sumPayments)}
+            </AlertTitle>
+          </Alert>
+        )}
+
         <Table
           data={form.payments.value}
           columns={[

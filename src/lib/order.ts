@@ -44,4 +44,6 @@ export interface OrderForm {
     onDeleteProduct: (index: number) => void;
     onAdd: () => void;
   };
+  sumProducts: number;
+  sumPayments: number;
 }

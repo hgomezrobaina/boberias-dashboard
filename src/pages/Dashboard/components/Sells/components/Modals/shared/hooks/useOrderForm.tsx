@@ -8,6 +8,7 @@ import { ORDER_TYPE } from "@/lib/order-type";
 import { PAYMENT_METHOD } from "@/lib/payment-method";
 import { type Product } from "@/lib/product";
 import { supabase } from "@/lib/supabase";
+import Decimal from "decimal.js";
 import { useEffect, useMemo, useState } from "react";
 
 interface Props {
@@ -157,6 +158,20 @@ export default function useOrderForm({ order }: Props): OrderForm {
     ]);
   }
 
+  const sumProducts = useMemo(
+    () =>
+      orderProducts.reduce(
+        (a, b) => new Decimal(b.price).mul(b.count).plus(a).toNumber(),
+        0
+      ),
+    [orderProducts]
+  );
+  const sumPayments = useMemo(
+    () =>
+      payments.reduce((a, b) => new Decimal(b.amount).plus(a).toNumber(), 0),
+    [payments]
+  );
+
   return {
     products: {
       value: products,
@@ -181,5 +196,7 @@ export default function useOrderForm({ order }: Props): OrderForm {
       onAdd: handleAddProduct,
     },
     type: { value: type, onChange: setType },
+    sumPayments: sumPayments,
+    sumProducts,
   };
 }
