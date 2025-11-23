@@ -25,10 +25,18 @@ export default function useOrderForm({ order }: Props): OrderForm {
     order ? order.description : ""
   );
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(
-    order ? order.order_product : []
+    order
+      ? order.order_product.map((o) => {
+          return { count: o.count, price: o.price, product: o.product };
+        })
+      : []
   );
   const [payments, setPayments] = useState<OrderPayment[]>(
-    order ? order.order_payment_method : []
+    order
+      ? order.order_payment_method.map((o) => {
+          return { amount: o.amount, method: o.method };
+        })
+      : []
   );
   const [type, setType] = useState(order ? order.type : ORDER_TYPE.SELL);
 

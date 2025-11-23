@@ -96,7 +96,6 @@ export default function OrderForm({ form }: Props) {
               cell: ({ row: o }) => (
                 <InputNumber
                   min={1}
-                  max={o.product.stock}
                   value={{
                     onChange: (v) =>
                       form.orderProducts.onChangeCount(o.product.id, v),

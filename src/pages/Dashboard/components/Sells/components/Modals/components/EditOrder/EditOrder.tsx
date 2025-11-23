@@ -1,22 +1,24 @@
-import FormModal from "@/modal/components/FormModal/FormModal";
-import { useState } from "react";
-import OrderForm from "../../shared/components/OrderForm/OrderForm";
+import type { Order } from "@/lib/order";
 import useOrderForm from "../../shared/hooks/useOrderForm";
+import { useState } from "react";
+import FormModal from "@/modal/components/FormModal/FormModal";
+import OrderForm from "../../shared/components/OrderForm/OrderForm";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import useModal from "@/modal/hooks/useModal";
-import { Decimal } from "decimal.js";
+import Decimal from "decimal.js";
 
 interface Props {
+  order: Order;
   refetch: () => void;
 }
 
-export default function InsertOrder({ refetch }: Props) {
-  const [loading, setLoading] = useState(false);
-
+export default function EditOrder({ order, refetch }: Props) {
   const { handleClose } = useModal();
 
-  const form = useOrderForm({});
+  const [loading, setLoading] = useState(false);
+
+  const form = useOrderForm({ order: order });
 
   async function handleSubmit() {
     setLoading(true);
@@ -41,26 +43,62 @@ export default function InsertOrder({ refetch }: Props) {
     }
 
     const defaultError = () => {
-      toast.error("Hubo un error al crear la orden");
+      toast.error("Hubo un error al editar la orden");
 
       setLoading(false);
     };
 
     let error = false;
 
-    const { data } = await supabase
+    const { error: e } = await supabase
       .from("order")
-      .insert([
-        {
-          description: form.description.value,
-          sell_date: form.sellDate.value,
-          type: form.type.value,
-        },
-      ])
-      .select("*");
+      .update({
+        description: form.description.value,
+        sell_date: form.sellDate.value,
+        type: form.type.value,
+      })
+      .eq("id", order.id);
 
-    if (data) {
-      const element = data[0];
+    if (e === null) {
+      // delete products
+      for (const p of order.order_product) {
+        if (error) {
+          break;
+        }
+
+        const { error: e } = await supabase
+          .from("order_product")
+          .delete()
+          .eq("order_id", order.id)
+          .eq("product_id", p.product.id);
+
+        if (e === null) {
+          const { error: se } = await supabase.rpc("increment_product_stock", {
+            product_id_param: p.product.id,
+            product_count: p.count,
+          });
+
+          if (se !== null) {
+            error = true;
+          }
+        } else {
+          error = true;
+        }
+      }
+
+      if (!error) {
+        // delete payments
+        for (let i = 0; i < order.order_payment_method.length; i++) {
+          const { error: e } = await supabase
+            .from("order_payment_method")
+            .delete()
+            .eq("order_id", order.id);
+
+          if (e !== null) {
+            error = true;
+          }
+        }
+      }
 
       // create products
       if (!error) {
@@ -70,7 +108,7 @@ export default function InsertOrder({ refetch }: Props) {
               product_id: p.product.id,
               count: p.count,
               price: p.price,
-              order_id: element.id,
+              order_id: order.id,
             };
           })
         );
@@ -100,7 +138,7 @@ export default function InsertOrder({ refetch }: Props) {
         const { error: e } = await supabase.from("order_payment_method").insert(
           form.payments.value.map((p) => {
             return {
-              order_id: element.id,
+              order_id: order.id,
               method: p.method,
               amount: p.amount,
             };
@@ -113,7 +151,7 @@ export default function InsertOrder({ refetch }: Props) {
       }
 
       if (!error) {
-        toast.success("Orden insertada exitosamente");
+        toast.success("Orden editada exitosamente");
 
         setLoading(false);
 
@@ -123,17 +161,15 @@ export default function InsertOrder({ refetch }: Props) {
       } else {
         defaultError();
       }
-    } else {
-      defaultError();
     }
   }
 
   return (
     <FormModal
-      onSubmit={handleSubmit}
       loading={loading}
-      title="Insertar venta"
       width={800}
+      onSubmit={handleSubmit}
+      title="Editar orden"
     >
       <OrderForm form={form} />
     </FormModal>
