@@ -8,13 +8,40 @@ export const getDayNumbers = (year: number, month: number) => {
 };
 
 export const filterOrdersByWeek = (orders: Order[], week: Week) => {
+  const result = orders.filter((o) => o.type === ORDER_TYPE.SELL);
+
+  return result.filter(
+    (o) =>
+      new Date(o.sell_date) <= week.endDate &&
+      new Date(o.sell_date) >= week.startDate
+  );
+};
+
+export const filterOrdersByYear = (orders: Order[], year: number) => {
   return orders
     .filter((o) => o.type === ORDER_TYPE.SELL)
-    .filter(
-      (o) =>
-        new Date(o.sell_date) <= week.endDate &&
-        new Date(o.sell_date) >= week.startDate
-    );
+    .filter((o) => {
+      return (
+        new Date(o.sell_date).getFullYear() ===
+        (year === -1 ? new Date().getFullYear() : year)
+      );
+    });
+};
+
+export const filterOrdersByMonth = (
+  orders: Order[],
+  year: number,
+  month: number
+) => {
+  return orders
+    .filter((o) => o.type === ORDER_TYPE.SELL)
+    .filter((o) => {
+      return (
+        new Date(o.sell_date).getMonth() === month &&
+        new Date(o.sell_date).getFullYear() ===
+          (year === -1 ? new Date().getFullYear() : year)
+      );
+    });
 };
 
 export const filterOrdersByDate = (

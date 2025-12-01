@@ -49,10 +49,7 @@ export default function Sells({ month, year }: Props) {
   const refetch = useCallback(() => {
     setLoading(true);
 
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, month + 1, 1);
-
-    supabase
+    let request = supabase
       .from("order")
       .select(
         `
@@ -81,16 +78,33 @@ export default function Sells({ month, year }: Props) {
         )
       `
       )
-      .gte("sell_date", startDate.toISOString())
-      .lt("sell_date", endDate.toISOString())
-      .order("sell_date", { ascending: false })
-      .then((res) => {
-        if (res.data) {
-          setOrders(res.data);
-        }
+      .order("sell_date", { ascending: false });
 
-        setLoading(false);
-      });
+    if (year !== -1) {
+      if (month !== -1) {
+        const startDate = new Date(year, month, 1);
+        const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+        request = request
+          .gte("sell_date", startDate.toISOString())
+          .lte("sell_date", endDate.toISOString());
+      } else {
+        const startDate = new Date(year, 0, 1);
+        const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+
+        request = request
+          .gte("sell_date", startDate.toISOString())
+          .lte("sell_date", endDate.toISOString());
+      }
+    }
+
+    request.then((res) => {
+      if (res.data) {
+        setOrders(res.data);
+      }
+
+      setLoading(false);
+    });
   }, [year, month]);
 
   useEffect(() => {

@@ -8,6 +8,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import CashChart from "./components/CashChart/CashChart";
 import BalanceChart from "./components/BalanceChart/BalanceChart";
 import { ORDER_TYPE } from "@/lib/order-type";
+import { filterOrdersByYear } from "./domain/helpers";
+import MetricCard from "@/ui/components/MetricCard/MetricCard";
+import { DollarSign } from "lucide-react";
+import { PriceTextBuilder } from "@/lib/price-text-builder";
+import TransfersTable from "./components/TransfersTable/TransfersTable";
 
 interface Props {
   month: number;
@@ -56,56 +61,95 @@ export default function Charts({ month, year }: Props) {
   const refetch = useCallback(() => {
     setLoading(true);
 
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, month + 1, 1);
-
-    supabase
+    let request = supabase
       .from("order")
       .select(
         `
-         *, 
-         order_product (
-             product_id,
-             count,
-             price,
-             product (
-               id,
-               name,
-               description,
-               stock,
-               cost_price,
-               sell_price,
-               created_at,
-               active,
-               arrive_date,
-               expiration_date,
-               code
-             )
-         ),
-         order_payment_method (
-           method,
-           amount
-         )
-       `
+        *, 
+        order_product (
+            product_id,
+            count,
+            price,
+            product (
+              id,
+              name,
+              description,
+              stock,
+              cost_price,
+              sell_price,
+              created_at,
+              active,
+              arrive_date,
+              expiration_date,
+              code
+            )
+        ),
+        order_payment_method (
+          method,
+          amount
+        )
+      `
       )
-      .gte("sell_date", startDate.toISOString())
-      .lt("sell_date", endDate.toISOString())
-      .order("sell_date", { ascending: false })
-      .then((res) => {
-        if (res.data) {
-          setOrders(res.data);
-        }
+      .order("sell_date", { ascending: false });
 
-        setLoading(false);
-      });
+    if (year !== -1) {
+      if (month !== -1) {
+        const startDate = new Date(year, month, 1);
+        const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+        request = request
+          .gte("sell_date", startDate.toISOString())
+          .lte("sell_date", endDate.toISOString());
+      } else {
+        const startDate = new Date(year, 0, 1);
+        const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+
+        request = request
+          .gte("sell_date", startDate.toISOString())
+          .lte("sell_date", endDate.toISOString());
+      }
+    }
+
+    request.then((res) => {
+      if (res.data) {
+        setOrders(res.data);
+      }
+
+      setLoading(false);
+    });
   }, [year, month]);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
+  const totalSells = useMemo(() => {
+    let sum = 0;
+
+    const filtered = filterOrdersByYear(orders, year);
+
+    for (const o of filtered) {
+      const amount = o.order_payment_method.reduce(
+        (a, b) => new Decimal(b.amount).plus(a).toNumber(),
+        0
+      );
+
+      sum = new Decimal(amount).plus(sum).toNumber();
+    }
+
+    return sum;
+  }, [orders, year]);
+
   return (
     <>
+      <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-x-4 gap-y-4 mb-5">
+        <MetricCard
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          title="Ventas en el año"
+          value={PriceTextBuilder.build(totalSells)}
+        />
+      </div>
+
       <CashChart month={month} orders={orders} year={year} />
 
       <BalanceChart month={month} orders={orders} year={year} />
@@ -127,6 +171,8 @@ export default function Charts({ month, year }: Props) {
           />
         </Card>
       )}
+
+      <TransfersTable month={month} orders={orders} year={year} />
     </>
   );
 }

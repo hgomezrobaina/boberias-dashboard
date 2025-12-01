@@ -4,16 +4,22 @@ import LinealChart from "@/ui/components/Charts/components/LinealChart/LinealCha
 import { useMemo, useState } from "react";
 import {
   filterOrdersByDate,
+  filterOrdersByMonth,
   filterOrdersByWeek,
   getDayNumbers,
   getWeeksFromMonth,
 } from "../../domain/helpers";
-import { WeekAmountData, type DayAmountData } from "../../domain/chart";
+import {
+  WeekAmountData,
+  type DayAmountData,
+  type MonthAmountData,
+} from "../../domain/chart";
 import Decimal from "decimal.js";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
 import { PAYMENT_METHOD } from "@/lib/payment-method";
 import { MONTH_DATA_SECTION } from "../../domain/month-data-section";
 import MonthSections from "../../shared/components/MonthSections/MonthSections";
+import { chartMonths } from "@/lib/months";
 
 interface Props {
   orders: Order[];
@@ -72,6 +78,50 @@ export default function CashChart({ month, orders, year }: Props) {
     return result;
   }, [orders, year, month]);
 
+  const transferYear = useMemo(() => {
+    const result = [] as MonthAmountData[];
+
+    for (const month of chartMonths) {
+      let sum = 0;
+
+      const filtered = filterOrdersByMonth(orders, year, month.value);
+
+      for (const o of filtered) {
+        const amount = o.order_payment_method
+          .filter((o) => o.method === PAYMENT_METHOD.TRANSFER)
+          .reduce((a, b) => new Decimal(b.amount).plus(a).toNumber(), 0);
+
+        sum = new Decimal(amount).plus(sum).toNumber();
+      }
+
+      result.push({ month: month.label, amount: sum });
+    }
+
+    return result;
+  }, [orders, year]);
+
+  const cashYear = useMemo(() => {
+    const result = [] as MonthAmountData[];
+
+    for (const month of chartMonths) {
+      let sum = 0;
+
+      const filtered = filterOrdersByMonth(orders, year, month.value);
+
+      for (const o of filtered) {
+        const amount = o.order_payment_method
+          .filter((o) => o.method === PAYMENT_METHOD.CASH)
+          .reduce((a, b) => new Decimal(b.amount).plus(a).toNumber(), 0);
+
+        sum = new Decimal(amount).plus(sum).toNumber();
+      }
+
+      result.push({ month: month.label, amount: sum });
+    }
+
+    return result;
+  }, [orders, year]);
+
   const cashAmount = useMemo(() => {
     const result = [] as DayAmountData[];
 
@@ -123,9 +173,39 @@ export default function CashChart({ month, orders, year }: Props) {
   return (
     <Card
       className="mb-5"
-      title="Métodos de pago en el mes"
-      extra={<MonthSections onChange={setSection} section={section} />}
+      title="Métodos de pago"
+      extra={
+        <MonthSections
+          onChange={setSection}
+          section={section}
+          month={month}
+          year={year}
+        />
+      }
     >
+      {section === MONTH_DATA_SECTION.YEAR && (
+        <LinealChart
+          data={[
+            {
+              label: "Ingresos de efectivo",
+              color: "oklch(0.145 0 0)",
+              data: cashYear.map((o) => {
+                return { unit: o.month, value: o.amount };
+              }),
+            },
+            {
+              label: "Ingresos de transferencias",
+              color: "var(--color-blue-500)",
+              data: transferYear.map((o) => {
+                return { unit: o.month, value: o.amount };
+              }),
+            },
+          ]}
+          height={500}
+          y={{ formatter: (v) => PriceTextBuilder.build(v) }}
+        />
+      )}
+
       {section === MONTH_DATA_SECTION.DAY && (
         <LinealChart
           data={[

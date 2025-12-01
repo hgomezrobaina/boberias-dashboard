@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header/Header";
 import Reports from "./components/Reports/Reports";
 import Sections from "./components/Sections/Sections";
@@ -13,6 +13,12 @@ export default function Dashboard() {
   const [section, setSection] = useState(DASHBOARD_SECTION.PRODUCTS);
   const [month, setMonth] = useState(today.getMonth());
   const [year, setYear] = useState(today.getFullYear());
+
+  useEffect(() => {
+    if (year === -1) {
+      setMonth(-1);
+    }
+  }, [year]);
 
   return (
     <div className="bg-gray-50 w-full min-h-dvh flex flex-col items-center px-5 py-5">

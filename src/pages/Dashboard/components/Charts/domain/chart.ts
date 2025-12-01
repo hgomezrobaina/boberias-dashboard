@@ -5,6 +5,11 @@ export interface DayAmountData {
   amount: number;
 }
 
+export interface MonthAmountData {
+  month: string;
+  amount: number;
+}
+
 export interface Week {
   startDate: Date;
   endDate: Date;
