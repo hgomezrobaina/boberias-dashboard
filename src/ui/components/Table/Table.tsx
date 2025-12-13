@@ -7,21 +7,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Input from "../Input/Input";
+import ContentLoader from "../ContentLoader/ContentLoader";
 
 interface Props<T> {
   columns: ColumnDefinition<T>[];
   data: T[];
-  loading?: boolean;
+  loading: boolean;
   search?: { value: string; onChange: (v: string) => void };
 }
 
 interface ColumnDefinition<T> {
   cell: (props: { row: T; index: number }) => React.ReactNode;
   name: string;
+  render?: boolean;
   className?: string;
 }
 
-export default function Table<T>({ columns, data, search }: Props<T>) {
+export default function Table<T>({ columns, data, search, loading }: Props<T>) {
   return (
     <>
       {search && (
@@ -39,27 +41,39 @@ export default function Table<T>({ columns, data, search }: Props<T>) {
         </div>
       )}
 
-      <LibTable>
-        <TableHeader>
-          <TableRow>
-            {columns.map((c, index) => (
-              <TableHead key={index}>{c.name}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
+      {loading && (
+        <div className="flex flex-col w-full gap-y-1.5">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <ContentLoader height={25} key={index} />
+          ))}
+        </div>
+      )}
 
-        <TableBody>
-          {data.map((item, index) => (
-            <TableRow key={index}>
-              {columns.map((c, j) => (
-                <TableCell key={j} className={c.className}>
-                  {c.cell({ index: index, row: item })}
-                </TableCell>
+      {!loading && (
+        <LibTable>
+          <TableHeader>
+            <TableRow>
+              {columns.map((c, index) => (
+                <TableHead key={index}>{c.name}</TableHead>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </LibTable>
+          </TableHeader>
+
+          <TableBody>
+            {data.map((item, index) => (
+              <TableRow key={index}>
+                {columns
+                  .filter((c) => c.render === undefined || c.render === true)
+                  .map((c, j) => (
+                    <TableCell key={j} className={c.className}>
+                      {c.cell({ index: index, row: item })}
+                    </TableCell>
+                  ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </LibTable>
+      )}
     </>
   );
 }

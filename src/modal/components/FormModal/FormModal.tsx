@@ -1,8 +1,8 @@
 import Button from "@/ui/components/Button/Button";
 import useModal from "../../hooks/useModal";
 import Modal from "../Modal/Modal";
-import { X } from "lucide-react";
 import clsx from "clsx";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface Props {
   onSubmit(): void;
@@ -48,19 +48,7 @@ export default function FormModal({
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <header className="flex items-start gap-x-5 mb-6 justify-between">
-          <div className="flex items-center gap-x-3">
-            <h2 className="text-xl font-semibold">{title}</h2>
-          </div>
-
-          <button
-            className="stroke-gray-800"
-            onClick={handleClose}
-            type="button"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </header>
+        <ModalHeader title={title} />
 
         {children}
 

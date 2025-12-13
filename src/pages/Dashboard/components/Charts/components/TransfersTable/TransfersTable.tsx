@@ -38,6 +38,7 @@ export default function TransfersTable({ orders, month, year }: Props) {
   return (
     <Card className="mb-5" title="Transferencia">
       <Table
+        loading={false}
         columns={[
           {
             name: "Fecha de venta",

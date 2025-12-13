@@ -9,12 +9,13 @@ import {
   DeleteProductModalProps,
   EditProductModalProps,
   InsertProductModalProps,
+  ViewProductSellsModalProps,
 } from "./domain/modal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/lib/product";
 import IconButton from "@/ui/components/IconButton/IconButton";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Eye } from "lucide-react";
 
 export default function Products() {
   const { handleOpenModal } = useModal();
@@ -92,6 +93,13 @@ export default function Products() {
               name: "",
               cell: ({ row }) => (
                 <div className="flex items-center gap-x-2">
+                  <IconButton
+                    icon={<Eye className="w-6 h-6" />}
+                    onClick={() =>
+                      handleOpenModal(new ViewProductSellsModalProps(row.id))
+                    }
+                  />
+
                   <IconButton
                     icon={<Edit className="w-6 h-6" />}
                     onClick={() =>

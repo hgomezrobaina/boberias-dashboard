@@ -73,6 +73,7 @@ export default function OrderForm({ form }: Props) {
         )}
 
         <Table
+          loading={false}
           data={form.orderProducts.value}
           columns={[
             {
@@ -167,6 +168,7 @@ export default function OrderForm({ form }: Props) {
         )}
 
         <Table
+          loading={false}
           data={form.payments.value}
           columns={[
             {
