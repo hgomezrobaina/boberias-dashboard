@@ -102,6 +102,7 @@ export default function EditOrder({ order, refetch }: Props) {
               count: p.count,
               price: p.price,
               order_id: order.id,
+              prev_stock: p.prev_stock,
             };
           })
         );

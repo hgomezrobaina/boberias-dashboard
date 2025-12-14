@@ -64,6 +64,7 @@ export default function InsertOrder({ refetch }: Props) {
               count: p.count,
               price: p.price,
               order_id: element.id,
+              prev_stock: p.prev_stock,
             };
           })
         );

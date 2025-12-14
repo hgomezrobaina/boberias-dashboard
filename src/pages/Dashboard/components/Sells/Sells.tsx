@@ -31,6 +31,7 @@ export default function Sells({ month, year }: Props) {
             product_id,
             count,
             price,
+            prev_stock,
             product (
               id,
               name,

@@ -31,6 +31,7 @@ export default function ViewProductSells({ id }: Props) {
                 product_id,
                 count,
                 price,
+                prev_stock,
                 product (
                   id,
                   name,
@@ -114,6 +115,18 @@ export default function ViewProductSells({ id }: Props) {
 
                 return result
                   ? PriceTextBuilder.build(result.price)
+                  : NullTextBuilder.build();
+              },
+            },
+            {
+              name: "Cantidad previa",
+              cell: ({ row }) => {
+                const result = row.order_product.find(
+                  (p) => p.product.id === id
+                );
+
+                return result
+                  ? NumberTextBuilder.execute(result.prev_stock)
                   : NullTextBuilder.build();
               },
             },

@@ -17,6 +17,7 @@ export interface OrderProduct {
   price: number;
   count: number;
   product: Product;
+  prev_stock: number | null;
 }
 
 export interface OrderPayment {

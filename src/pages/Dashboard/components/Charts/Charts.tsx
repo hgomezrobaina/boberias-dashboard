@@ -70,6 +70,7 @@ export default function Charts({ month, year }: Props) {
             product_id,
             count,
             price,
+            prev_stock,
             product (
               id,
               name,

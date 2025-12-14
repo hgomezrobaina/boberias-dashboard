@@ -11,13 +11,16 @@ import {
   InsertProductModalProps,
   ViewProductSellsModalProps,
 } from "./domain/modal";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/lib/product";
 import IconButton from "@/ui/components/IconButton/IconButton";
 import { Edit, Trash, Eye } from "lucide-react";
+import { UserContext } from "@/user/context/user-context";
+import { USER_ROLE } from "@/lib/user-role";
 
 export default function Products() {
+  const { role } = useContext(UserContext);
   const { handleOpenModal } = useModal();
 
   const [loading, setLoading] = useState(true);
@@ -63,11 +66,13 @@ export default function Products() {
         title="Inventario de Productos"
         description="Control de stock y productos disponibles"
         extra={
-          <Button
-            onClick={() => handleOpenModal(new InsertProductModalProps())}
-          >
-            Insertar
-          </Button>
+          role === USER_ROLE.ADMIN && (
+            <Button
+              onClick={() => handleOpenModal(new InsertProductModalProps())}
+            >
+              Insertar
+            </Button>
+          )
         }
       >
         <Table
@@ -90,6 +95,7 @@ export default function Products() {
               cell: ({ row }) => NumberTextBuilder.execute(row.stock),
             },
             {
+              render: role === USER_ROLE.ADMIN,
               name: "",
               cell: ({ row }) => (
                 <div className="flex items-center gap-x-2">

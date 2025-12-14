@@ -5,6 +5,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Login from "./pages/Login/Login";
 import PrivateRoute from "./pages/PrivateRoute/PrivateRoute";
+import UserProvider from "./user/context/UserProvider";
 
 const router = createBrowserRouter([
   {
@@ -20,10 +21,12 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <ModalProvider>
-      <Toaster position="top-right" />
+    <UserProvider>
+      <ModalProvider>
+        <Toaster position="top-right" />
 
-      <RouterProvider router={router} />
-    </ModalProvider>
+        <RouterProvider router={router} />
+      </ModalProvider>
+    </UserProvider>
   );
 }

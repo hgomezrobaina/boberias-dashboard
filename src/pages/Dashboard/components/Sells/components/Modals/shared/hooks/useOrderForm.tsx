@@ -28,7 +28,12 @@ export default function useOrderForm({ order }: Props): OrderForm {
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(
     order
       ? order.order_product.map((o) => {
-          return { count: o.count, price: o.price, product: o.product };
+          return {
+            count: o.count,
+            price: o.price,
+            product: o.product,
+            prev_stock: o.prev_stock,
+          };
         })
       : []
   );
@@ -73,7 +78,12 @@ export default function useOrderForm({ order }: Props): OrderForm {
     if (first) {
       setOrderProducts((prev) => [
         ...prev,
-        { product: first, count: 1, price: first.sell_price },
+        {
+          product: first,
+          count: 1,
+          price: first.sell_price,
+          prev_stock: first.stock,
+        },
       ]);
     }
   }
@@ -86,7 +96,12 @@ export default function useOrderForm({ order }: Props): OrderForm {
       setOrderProducts((prev) => {
         return prev.map((p, i) => {
           if (i === index) {
-            return { count: 1, price: found.sell_price, product: found };
+            return {
+              count: 1,
+              price: found.sell_price,
+              product: found,
+              prev_stock: found.stock,
+            };
           }
 
           return p;
