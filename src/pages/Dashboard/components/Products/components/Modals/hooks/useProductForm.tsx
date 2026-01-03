@@ -12,7 +12,7 @@ export default function useProductForm({ product }: Props) {
   const [arriveDate, setArriveDate] = useState(
     product ? new Date(product.arrive_date) : new Date()
   );
-  const [stock, setStock] = useState(product ? product.stock : 1);
+  const [stock, setStock] = useState(product ? product.stock : 0);
   const [code, setCode] = useState(product ? product.code : "");
   const [expirationDate, setExpirationDate] = useState(
     product

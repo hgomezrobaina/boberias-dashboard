@@ -6,7 +6,7 @@ import InputNumber from "@/ui/components/InputNumber/InputNumber";
 interface Props {
   code: { value: string; onChange: (v: string) => void };
   name: { value: string; onChange: (v: string) => void };
-  stock: { value: number; onChange: (v: number) => void };
+  stock?: { value: number; onChange: (v: number) => void };
   costPrice: { value: number; onChange: (v: number) => void };
   sellPrice: { value: number; onChange: (v: number) => void };
   arriveDate: { value: Date; onChange: (v: Date) => void };
@@ -32,12 +32,11 @@ export default function ProductForm({
         <Input value={{ onChange: name.onChange, value: name.value }} />
       </FormInput>
 
-      <FormInput label="Cantidad">
-        <InputNumber
-          min={0}
-          value={{ value: stock.value, onChange: stock.onChange }}
-        />
-      </FormInput>
+      {stock && (
+        <FormInput label="Cantidad">
+          <InputNumber min={0} value={stock} />
+        </FormInput>
+      )}
 
       <FormInput label="Precio de costo">
         <InputNumber

@@ -26,8 +26,6 @@ export default function InsertProduct({ refetch }: Props) {
     setCostPrice,
     setName,
     setSellPrice,
-    setStock,
-    stock,
     expirationDate,
     setExpirationDate,
   } = useProductForm({});
@@ -57,7 +55,7 @@ export default function InsertProduct({ refetch }: Props) {
                   cost_price: costPrice,
                   sell_price: sellPrice,
                   name: name.trim(),
-                  stock: stock,
+                  stock: 0,
                   description: "",
                   code: code.trim(),
                   active: true,
@@ -101,7 +99,6 @@ export default function InsertProduct({ refetch }: Props) {
         expirationDate={{ value: expirationDate, onChange: setExpirationDate }}
         name={{ value: name, onChange: setName }}
         sellPrice={{ value: sellPrice, onChange: setSellPrice }}
-        stock={{ value: stock, onChange: setStock }}
       />
     </FormModal>
   );

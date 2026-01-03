@@ -20,3 +20,9 @@ export class DeleteProductModalProps extends ModalProps {
     super();
   }
 }
+
+export class InsertProductStockModalProps extends ModalProps {
+  constructor(readonly product: Product) {
+    super();
+  }
+}

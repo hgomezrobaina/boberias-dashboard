@@ -9,13 +9,14 @@ import {
   DeleteProductModalProps,
   EditProductModalProps,
   InsertProductModalProps,
+  InsertProductStockModalProps,
   ViewProductSellsModalProps,
 } from "./domain/modal";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/lib/product";
 import IconButton from "@/ui/components/IconButton/IconButton";
-import { Edit, Trash, Eye } from "lucide-react";
+import { Edit, Trash, Eye, Plus } from "lucide-react";
 import { UserContext } from "@/user/context/user-context";
 import { USER_ROLE } from "@/lib/user-role";
 
@@ -99,6 +100,13 @@ export default function Products() {
               name: "",
               cell: ({ row }) => (
                 <div className="flex items-center gap-x-2">
+                  <IconButton
+                    icon={<Plus className="w-6 h-6" />}
+                    onClick={() =>
+                      handleOpenModal(new InsertProductStockModalProps(row))
+                    }
+                  />
+
                   <IconButton
                     icon={<Eye className="w-6 h-6" />}
                     onClick={() =>
