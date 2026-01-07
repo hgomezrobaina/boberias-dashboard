@@ -53,7 +53,26 @@ export default function Products() {
 
   const showProducts = useMemo(() => {
     if (search) {
-      return products.filter((p) => p.code.includes(search));
+      const result = [] as Product[];
+
+      for (const p of products) {
+        const valid = p.code.toLowerCase().includes(search.toLowerCase());
+
+        if (valid) {
+          result.push(p);
+        }
+      }
+
+      for (const p of products) {
+        const valid = p.name.toLowerCase().includes(search.toLowerCase());
+        const exists = result.some((o) => o.id === p.id);
+
+        if (!exists && valid) {
+          result.push(p);
+        }
+      }
+
+      return result;
     }
 
     return products;
