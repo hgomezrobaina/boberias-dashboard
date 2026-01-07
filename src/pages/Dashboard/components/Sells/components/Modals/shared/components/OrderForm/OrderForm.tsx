@@ -1,6 +1,6 @@
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
-import type { OrderForm } from "@/lib/order";
+import type { OrderForm, OrderProduct } from "@/lib/order";
 import { ORDER_TYPE, orderTypes, OrderTypeTextBuiler } from "@/lib/order-type";
 import {
   PAYMENT_METHOD,
@@ -23,6 +23,27 @@ interface Props {
 }
 
 export default function OrderForm({ form }: Props) {
+  function handleSearch(row: OrderProduct, id: string, search: string): number {
+    const found = [row.product, ...form.products.available].find(
+      (o) => o.id === Number(id)
+    );
+
+    if (found) {
+      const code = found.code.toLowerCase().includes(search.toLowerCase());
+      const name = found.name.toLowerCase().includes(search.toLowerCase());
+
+      if (code) {
+        return 1;
+      }
+
+      if (name) {
+        return 0.5;
+      }
+    }
+
+    return 0;
+  }
+
   return (
     <>
       <FormInput label="Fecha de venta">
@@ -80,22 +101,7 @@ export default function OrderForm({ form }: Props) {
               name: "Producto",
               cell: ({ index, row }) => (
                 <SearchSelect
-                  criteria={(id, search) => {
-                    const found = [
-                      row.product,
-                      ...form.products.available,
-                    ].find((o) => o.id === Number(id));
-
-                    if (found) {
-                      return found.code
-                        .toLowerCase()
-                        .includes(search.toLowerCase())
-                        ? 1
-                        : 0;
-                    }
-
-                    return 0;
-                  }}
+                  criteria={(id, search) => handleSearch(row, id, search)}
                   options={[row.product, ...form.products.available].map(
                     (o) => {
                       const price = PriceTextBuilder.build(o.sell_price);
