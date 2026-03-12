@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Header from "./components/Header/Header";
-import Reports from "./components/Reports/Reports";
 import Sections from "./components/Sections/Sections";
 import { DASHBOARD_SECTION } from "./domain/section";
 import Charts from "./components/Charts/Charts";
@@ -27,8 +26,6 @@ export default function Dashboard() {
           month={{ onChange: setMonth, value: month }}
           year={{ onChange: setYear, value: year }}
         />
-
-        <Reports />
 
         <Sections onChange={setSection} section={section} />
 

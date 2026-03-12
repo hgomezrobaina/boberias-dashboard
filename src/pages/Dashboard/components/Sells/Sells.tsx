@@ -32,6 +32,7 @@ export default function Sells({ month, year }: Props) {
             count,
             price,
             prev_stock,
+            original_cost,
             product (
               id,
               name,
@@ -50,7 +51,7 @@ export default function Sells({ month, year }: Props) {
           method,
           amount
         )
-      `
+      `,
       )
       .order("sell_date", { ascending: false });
 

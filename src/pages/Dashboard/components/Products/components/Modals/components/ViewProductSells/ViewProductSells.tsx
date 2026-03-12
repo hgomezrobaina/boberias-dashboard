@@ -7,8 +7,11 @@ import type { ProductStockEnter } from "@/lib/product-stock-enter";
 import { supabase } from "@/lib/supabase";
 import Modal from "@/modal/components/Modal/Modal";
 import ModalHeader from "@/modal/components/ModalHeader/ModalHeader";
+import MetricCard from "@/ui/components/MetricCard/MetricCard";
 import Table from "@/ui/components/Table/Table";
 import clsx from "clsx";
+import Decimal from "decimal.js";
+import { DollarSign, Package, ShoppingCart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface Props {
@@ -22,6 +25,7 @@ interface ProductOperation {
   count: number | null;
   price: number | null;
   prev_stock: number | null;
+  original_cost: number | null;
 }
 
 export default function ViewProductSells({ id }: Props) {
@@ -63,6 +67,7 @@ export default function ViewProductSells({ id }: Props) {
                 count,
                 price,
                 prev_stock,
+                original_cost,
                 product (
                   id,
                   name,
@@ -81,7 +86,7 @@ export default function ViewProductSells({ id }: Props) {
               method,
               amount
             )
-          `
+          `,
       )
       .order("sell_date", { ascending: false })
       .then((res) => {
@@ -91,13 +96,35 @@ export default function ViewProductSells({ id }: Props) {
           setOrders(
             data.filter((o) => {
               return o.order_product.some((p) => p.product.id === id);
-            })
+            }),
           );
         }
 
         setOrderLoading(false);
       });
   }, [id]);
+
+  const totalSells = useMemo(() => {
+    return orders.reduce((acc, o) => {
+      const result = o.order_product.find((p) => p.product.id === id);
+      return acc + (result ? result.count : 0);
+    }, 0);
+  }, [orders, id]);
+
+  const totalEnters = useMemo(() => {
+    return enters.reduce((acc, e) => acc + e.count, 0);
+  }, [enters]);
+
+  const totalRevenue = useMemo(() => {
+    return orders.reduce((acc, o) => {
+      const result = o.order_product.find((p) => p.product.id === id);
+
+      return (
+        acc +
+        (result ? new Decimal(result.price).mul(result.count).toNumber() : 0)
+      );
+    }, 0);
+  }, [orders, id]);
 
   const data: ProductOperation[] = useMemo(() => {
     return [
@@ -115,6 +142,7 @@ export default function ViewProductSells({ id }: Props) {
           prev_stock: prevStock,
           description: r.description,
           price: price,
+          original_cost: result ? result.original_cost : null,
         };
       }),
       ...enters.map((r) => {
@@ -125,6 +153,7 @@ export default function ViewProductSells({ id }: Props) {
           prev_stock: r.prev_stock,
           description: r.description,
           price: null,
+          original_cost: null,
         };
       }),
     ];
@@ -135,17 +164,35 @@ export default function ViewProductSells({ id }: Props) {
       <div
         className={clsx(
           "flex flex-col",
-          "w-full max-w-[700px] max-h-full",
+          "w-full max-w-[900px] max-h-full",
           "bg-white",
           "px-6 py-5",
           "shadow-lg",
           "overflow-auto",
           "animate-duration-500",
           "h-max",
-          "rounded-lg"
+          "rounded-lg",
         )}
       >
         <ModalHeader title="Ventas del producto" />
+
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <MetricCard
+            icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            title="Ventas totales"
+            value={NumberTextBuilder.execute(totalSells)}
+          />
+          <MetricCard
+            icon={<Package className="h-4 w-4 text-muted-foreground" />}
+            title="Entradas totales"
+            value={NumberTextBuilder.execute(totalEnters)}
+          />
+          <MetricCard
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+            title="Dinero ganado"
+            value={PriceTextBuilder.build(totalRevenue)}
+          />
+        </div>
 
         <Table
           loading={entersLoading || orderLoading}
@@ -177,6 +224,10 @@ export default function ViewProductSells({ id }: Props) {
               cell: ({ row }) => {
                 return NumberTextBuilder.execute(row.prev_stock);
               },
+            },
+            {
+              name: "Costo original",
+              cell: ({ row }) => PriceTextBuilder.build(row.original_cost),
             },
           ]}
         />

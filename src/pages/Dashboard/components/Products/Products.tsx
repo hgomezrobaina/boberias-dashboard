@@ -115,16 +115,17 @@ export default function Products() {
               cell: ({ row }) => NumberTextBuilder.execute(row.stock),
             },
             {
-              render: role === USER_ROLE.ADMIN,
               name: "",
               cell: ({ row }) => (
                 <div className="flex items-center gap-x-2">
-                  <IconButton
-                    icon={<Plus className="w-6 h-6" />}
-                    onClick={() =>
-                      handleOpenModal(new InsertProductStockModalProps(row))
-                    }
-                  />
+                  {role === USER_ROLE.ADMIN && (
+                    <IconButton
+                      icon={<Plus className="w-6 h-6" />}
+                      onClick={() =>
+                        handleOpenModal(new InsertProductStockModalProps(row))
+                      }
+                    />
+                  )}
 
                   <IconButton
                     icon={<Eye className="w-6 h-6" />}
@@ -133,19 +134,23 @@ export default function Products() {
                     }
                   />
 
-                  <IconButton
-                    icon={<Edit className="w-6 h-6" />}
-                    onClick={() =>
-                      handleOpenModal(new EditProductModalProps(row))
-                    }
-                  />
+                  {role === USER_ROLE.ADMIN && (
+                    <IconButton
+                      icon={<Edit className="w-6 h-6" />}
+                      onClick={() =>
+                        handleOpenModal(new EditProductModalProps(row))
+                      }
+                    />
+                  )}
 
-                  <IconButton
-                    icon={<Trash className="w-6 h-6" />}
-                    onClick={() =>
-                      handleOpenModal(new DeleteProductModalProps(row.id))
-                    }
-                  />
+                  {role === USER_ROLE.ADMIN && (
+                    <IconButton
+                      icon={<Trash className="w-6 h-6" />}
+                      onClick={() =>
+                        handleOpenModal(new DeleteProductModalProps(row.id))
+                      }
+                    />
+                  )}
                 </div>
               ),
             },

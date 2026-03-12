@@ -18,6 +18,7 @@ export interface OrderProduct {
   count: number;
   product: Product;
   prev_stock: number | null;
+  original_cost: number | null;
 }
 
 export interface OrderPayment {

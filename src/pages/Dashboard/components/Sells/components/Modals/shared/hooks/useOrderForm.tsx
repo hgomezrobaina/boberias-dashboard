@@ -20,10 +20,10 @@ export default function useOrderForm({ order }: Props): OrderForm {
   const [products, setProducts] = useState<Product[]>([]);
 
   const [sellDate, setSellDate] = useState(
-    order ? new Date(order.sell_date) : new Date()
+    order ? new Date(order.sell_date) : new Date(),
   );
   const [description, setDescription] = useState(
-    order ? order.description : ""
+    order ? order.description : "",
   );
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(
     order
@@ -33,16 +33,17 @@ export default function useOrderForm({ order }: Props): OrderForm {
             price: o.price,
             product: o.product,
             prev_stock: o.prev_stock,
+            original_cost: o.original_cost,
           };
         })
-      : []
+      : [],
   );
   const [payments, setPayments] = useState<OrderPayment[]>(
     order
       ? order.order_payment_method.map((o) => {
           return { amount: o.amount, method: o.method };
         })
-      : []
+      : [],
   );
   const [type, setType] = useState(order ? order.type : ORDER_TYPE.SELL);
 
@@ -68,7 +69,7 @@ export default function useOrderForm({ order }: Props): OrderForm {
 
   const availableProducts = useMemo(() => {
     return products.filter(
-      (p) => !orderProducts.some((o) => o.product.id === p.id)
+      (p) => !orderProducts.some((o) => o.product.id === p.id),
     );
   }, [products, orderProducts]);
 
@@ -83,6 +84,7 @@ export default function useOrderForm({ order }: Props): OrderForm {
           count: 1,
           price: first.sell_price,
           prev_stock: first.stock,
+          original_cost: first.sell_price,
         },
       ]);
     }
@@ -101,6 +103,7 @@ export default function useOrderForm({ order }: Props): OrderForm {
               price: found.sell_price,
               product: found,
               prev_stock: found.stock,
+              original_cost: found.sell_price,
             };
           }
 
@@ -177,14 +180,14 @@ export default function useOrderForm({ order }: Props): OrderForm {
     () =>
       orderProducts.reduce(
         (a, b) => new Decimal(b.price).mul(b.count).plus(a).toNumber(),
-        0
+        0,
       ),
-    [orderProducts]
+    [orderProducts],
   );
   const sumPayments = useMemo(
     () =>
       payments.reduce((a, b) => new Decimal(b.amount).plus(a).toNumber(), 0),
-    [payments]
+    [payments],
   );
 
   return {

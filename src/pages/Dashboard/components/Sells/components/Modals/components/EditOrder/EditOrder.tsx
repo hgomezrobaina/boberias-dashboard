@@ -26,7 +26,7 @@ export default function EditOrder({ order, refetch }: Props) {
     if (form.type.value === ORDER_TYPE.SELL) {
       if (form.sumPayments !== form.sumProducts) {
         toast.error(
-          "La cantidad de dinero recolectado en los productos debe ser igual al pagado"
+          "La cantidad de dinero recolectado en los productos debe ser igual al pagado",
         );
 
         setLoading(false);
@@ -103,8 +103,9 @@ export default function EditOrder({ order, refetch }: Props) {
               price: p.price,
               order_id: order.id,
               prev_stock: p.prev_stock,
+              original_cost: p.product.sell_price,
             };
-          })
+          }),
         );
 
         if (e) {
@@ -136,7 +137,7 @@ export default function EditOrder({ order, refetch }: Props) {
               method: p.method,
               amount: p.amount,
             };
-          })
+          }),
         );
 
         if (e) {
