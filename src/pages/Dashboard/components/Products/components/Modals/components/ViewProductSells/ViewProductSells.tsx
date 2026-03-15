@@ -1,7 +1,7 @@
 import { DateTextBuilder } from "@/lib/date-text-builder";
 import { NumberTextBuilder } from "@/lib/number-text-builder";
 import { type Order } from "@/lib/order";
-import { OrderTypeTextBuiler } from "@/lib/order-type";
+import { ORDER_TYPE, OrderTypeTextBuiler } from "@/lib/order-type";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
 import type { ProductStockEnter } from "@/lib/product-stock-enter";
 import { supabase } from "@/lib/supabase";
@@ -104,10 +104,36 @@ export default function ViewProductSells({ id }: Props) {
       });
   }, [id]);
 
+  const totalLost = useMemo(() => {
+    return orders.reduce((acc, o) => {
+      if (o.type === ORDER_TYPE.LOST) {
+        const result = o.order_product.find((p) => p.product.id === id);
+        return acc + (result ? result.count : 0);
+      }
+
+      return acc;
+    }, 0);
+  }, [orders, id]);
+
+  const totalTransfer = useMemo(() => {
+    return orders.reduce((acc, o) => {
+      if (o.type === ORDER_TYPE.TRANSFER) {
+        const result = o.order_product.find((p) => p.product.id === id);
+        return acc + (result ? result.count : 0);
+      }
+
+      return acc;
+    }, 0);
+  }, [orders, id]);
+
   const totalSells = useMemo(() => {
     return orders.reduce((acc, o) => {
-      const result = o.order_product.find((p) => p.product.id === id);
-      return acc + (result ? result.count : 0);
+      if (o.type === ORDER_TYPE.SELL) {
+        const result = o.order_product.find((p) => p.product.id === id);
+        return acc + (result ? result.count : 0);
+      }
+
+      return acc;
     }, 0);
   }, [orders, id]);
 
@@ -176,11 +202,21 @@ export default function ViewProductSells({ id }: Props) {
       >
         <ModalHeader title="Ventas del producto" />
 
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <MetricCard
             icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
             title="Ventas totales"
             value={NumberTextBuilder.execute(totalSells)}
+          />
+          <MetricCard
+            icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            title="Transferencias totales"
+            value={PriceTextBuilder.build(totalTransfer)}
+          />
+          <MetricCard
+            icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            title="Mermas totales"
+            value={PriceTextBuilder.build(totalLost)}
           />
           <MetricCard
             icon={<Package className="h-4 w-4 text-muted-foreground" />}

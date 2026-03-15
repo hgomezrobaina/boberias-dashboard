@@ -62,6 +62,7 @@ export default function InsertProduct({ refetch }: Props) {
                   expiration_date: expirationDate,
                 },
               ])
+              .select("*")
               .then((res) => {
                 if (res.error) {
                   defaultError();

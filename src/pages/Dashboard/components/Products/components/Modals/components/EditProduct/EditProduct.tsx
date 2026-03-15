@@ -67,17 +67,46 @@ export default function EditProduct({ product, refetch }: Props) {
                 },
               ])
               .eq("id", product.id)
+              .select("*")
               .then((res) => {
                 if (res.error) {
                   defaultError();
                 } else {
-                  toast.success("Producto editado exitosamente");
+                  const result = res.data[0];
 
-                  setLoading(false);
+                  const diff = result.stock - product.stock;
 
-                  refetch();
+                  if (diff !== 0) {
+                    supabase
+                      .from("product_stock_enters")
+                      .insert([
+                        {
+                          count: diff,
+                          date: new Date(),
+                          description: "Ajuste",
+                          prev_stock: product.stock,
+                          product_id: product.id,
+                        },
+                      ])
+                      .select("*")
+                      .then(() => {
+                        toast.success("Producto editado exitosamente");
 
-                  handleClose();
+                        setLoading(false);
+
+                        refetch();
+
+                        handleClose();
+                      });
+                  } else {
+                    toast.success("Producto editado exitosamente");
+
+                    setLoading(false);
+
+                    refetch();
+
+                    handleClose();
+                  }
                 }
               });
           } else {
