@@ -25,7 +25,7 @@ interface ColumnDefinition<T> {
 
 export default function Table<T>({ columns, data, search, loading }: Props<T>) {
   return (
-    <>
+    <div className="flex flex-col h-max">
       {search && (
         <div className="flex w-full mb-3 gap-x-5 justify-between">
           <div className="w-full max-w-[260px]">
@@ -50,7 +50,7 @@ export default function Table<T>({ columns, data, search, loading }: Props<T>) {
       )}
 
       {!loading && (
-        <LibTable>
+        <LibTable className="">
           <TableHeader>
             <TableRow>
               {columns.map((c, index) => (
@@ -74,6 +74,6 @@ export default function Table<T>({ columns, data, search, loading }: Props<T>) {
           </TableBody>
         </LibTable>
       )}
-    </>
+    </div>
   );
 }
