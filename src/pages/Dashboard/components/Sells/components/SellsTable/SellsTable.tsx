@@ -5,8 +5,8 @@ import { PaymentMethodTextBuilder, PAYMENT_METHOD } from "@/lib/payment-method";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
 import IconButton from "@/ui/components/IconButton/IconButton";
 import Table from "@/ui/components/Table/Table";
-import { Edit, Trash } from "lucide-react";
-import { DeleteOrderModalProps, EditOrderModalProps } from "../../domain/modal";
+import { Trash } from "lucide-react";
+import { DeleteOrderModalProps } from "../../domain/modal";
 import Decimal from "decimal.js";
 import useModal from "@/modal/hooks/useModal";
 
@@ -20,12 +20,13 @@ const accumulateAmount = (orders: Order[], ref: Order) => {
   return orders
     .filter((o) => o.type === ORDER_TYPE.SELL)
     .filter(
-      (o) => new Date(ref.sell_date) >= new Date(o.sell_date) && o.id !== ref.id
+      (o) =>
+        new Date(ref.sell_date) >= new Date(o.sell_date) && o.id !== ref.id,
     )
     .reduce((a, b) => {
       const sum = b.order_payment_method.reduce(
         (c, d) => new Decimal(c).plus(d.amount).toNumber(),
-        0
+        0,
       );
 
       return new Decimal(a).plus(sum).toNumber();
@@ -54,7 +55,7 @@ export default function SellsTable({ loading, orders, actions }: Props) {
             name: "Importe",
             cell: ({ row }) => {
               return PriceTextBuilder.build(
-                row.order_product.reduce((a, b) => a + b.price * b.count, 0)
+                row.order_product.reduce((a, b) => a + b.price * b.count, 0),
               );
             },
           },
@@ -95,11 +96,6 @@ export default function SellsTable({ loading, orders, actions }: Props) {
             name: "",
             cell: ({ row }) => (
               <div className="flex items-center gap-x-2">
-                <IconButton
-                  icon={<Edit className="w-6 h-6" />}
-                  onClick={() => handleOpenModal(new EditOrderModalProps(row))}
-                />
-
                 <IconButton
                   icon={<Trash className="w-6 h-6" />}
                   onClick={() =>

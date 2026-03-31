@@ -28,7 +28,6 @@ export default function EditProduct({ product, refetch }: Props) {
     setCostPrice,
     setName,
     setSellPrice,
-    setStock,
     stock,
     expirationDate,
     setExpirationDate,
@@ -133,7 +132,6 @@ export default function EditProduct({ product, refetch }: Props) {
         expirationDate={{ value: expirationDate, onChange: setExpirationDate }}
         name={{ value: name, onChange: setName }}
         sellPrice={{ value: sellPrice, onChange: setSellPrice }}
-        stock={{ value: stock, onChange: setStock }}
       />
     </FormModal>
   );
