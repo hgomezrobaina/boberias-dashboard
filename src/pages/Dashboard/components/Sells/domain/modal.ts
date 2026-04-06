@@ -14,3 +14,9 @@ export class DeleteOrderModalProps extends ModalProps {
     super();
   }
 }
+
+export class ViewOrderModalProps extends ModalProps {
+  constructor(readonly order: Order) {
+    super();
+  }
+}

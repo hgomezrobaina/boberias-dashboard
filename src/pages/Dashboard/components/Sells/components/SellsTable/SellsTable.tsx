@@ -5,8 +5,8 @@ import { PaymentMethodTextBuilder, PAYMENT_METHOD } from "@/lib/payment-method";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
 import IconButton from "@/ui/components/IconButton/IconButton";
 import Table from "@/ui/components/Table/Table";
-import { Trash } from "lucide-react";
-import { DeleteOrderModalProps } from "../../domain/modal";
+import { Eye, Trash } from "lucide-react";
+import { DeleteOrderModalProps, ViewOrderModalProps } from "../../domain/modal";
 import Decimal from "decimal.js";
 import useModal from "@/modal/hooks/useModal";
 
@@ -96,6 +96,12 @@ export default function SellsTable({ loading, orders, actions }: Props) {
             name: "",
             cell: ({ row }) => (
               <div className="flex items-center gap-x-2">
+                <IconButton
+                  icon={<Eye className="w-6 h-6" />}
+                  onClick={() =>
+                    handleOpenModal(new ViewOrderModalProps(row))
+                  }
+                />
                 <IconButton
                   icon={<Trash className="w-6 h-6" />}
                   onClick={() =>
