@@ -12,9 +12,10 @@ import {
   InsertProductStockModalProps,
   ViewProductSellsModalProps,
 } from "./domain/modal";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import type { Product } from "@/lib/product";
+import { useContext } from "react";
+import type { ProductListable } from "@/lib/product-listable";
+import { ProductListService } from "@/lib/product-list-service";
+import usePagination from "@/ui/hooks/usePagination";
 import IconButton from "@/ui/components/IconButton/IconButton";
 import { Edit, Trash, Eye, Plus } from "lucide-react";
 import { UserContext } from "@/user/context/user-context";
@@ -24,59 +25,23 @@ export default function Products() {
   const { role } = useContext(UserContext);
   const { handleOpenModal } = useModal();
 
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [search, setSearch] = useState("");
-
-  const refetch = useCallback(() => {
-    setLoading(true);
-
-    supabase
-      .from("product")
-      .select("*")
-      .eq("active", true)
-      .order("id", { ascending: false })
-      .then((res) => {
-        if (res.data) {
-          setProducts(res.data);
-        } else {
-          setProducts([]);
-        }
-
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  const showProducts = useMemo(() => {
-    if (search) {
-      const result = [] as Product[];
-
-      for (const p of products) {
-        const valid = p.code.toLowerCase().includes(search.toLowerCase());
-
-        if (valid) {
-          result.push(p);
-        }
-      }
-
-      for (const p of products) {
-        const valid = p.name.toLowerCase().includes(search.toLowerCase());
-        const exists = result.some((o) => o.id === p.id);
-
-        if (!exists && valid) {
-          result.push(p);
-        }
-      }
-
-      return result;
-    }
-
-    return products;
-  }, [search, products]);
+  const {
+    data: products,
+    loading,
+    search,
+    setSearch,
+    refetch,
+    page,
+    totalPages,
+    total,
+    canPrev,
+    canNext,
+    nextPage,
+    prevPage,
+  } = usePagination<ProductListable>({
+    fetchPage: ({ from, to, search }) =>
+      ProductListService.getPage({ from, to, search }),
+  });
 
   return (
     <>
@@ -98,7 +63,16 @@ export default function Products() {
         <Table
           search={{ onChange: setSearch, value: search }}
           loading={loading}
-          data={showProducts}
+          data={products}
+          pagination={{
+            page,
+            totalPages,
+            total,
+            canPrev,
+            canNext,
+            onPrev: prevPage,
+            onNext: nextPage,
+          }}
           columns={[
             { cell: ({ row }) => row.code, name: "Código" },
             { cell: ({ row }) => row.name, name: "Nombre" },

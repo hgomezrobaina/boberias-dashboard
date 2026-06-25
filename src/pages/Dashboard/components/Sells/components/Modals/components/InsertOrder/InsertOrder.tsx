@@ -75,21 +75,6 @@ export default function InsertOrder({ refetch }: Props) {
         }
       }
 
-      // update products
-      if (!error) {
-        for (const p of form.orderProducts.value) {
-          const { error: e } = await supabase.rpc("decrement_product_stock", {
-            product_id_param: p.product.id,
-            product_count: p.count,
-          });
-
-          if (e) {
-            error = true;
-            break;
-          }
-        }
-      }
-
       // create payments
       if (!error) {
         const { error: e } = await supabase.from("order_payment_method").insert(

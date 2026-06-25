@@ -1,6 +1,7 @@
 import type { ORDER_TYPE } from "./order-type";
 import type { PAYMENT_METHOD } from "./payment-method";
 import type { Product } from "./product";
+import type { ProductListable } from "./product-listable";
 
 export interface Order {
   amount: number;
@@ -27,7 +28,11 @@ export interface OrderPayment {
 }
 
 export interface OrderForm {
-  products: { value: Product[]; available: Product[]; loading: boolean };
+  products: {
+    value: ProductListable[];
+    available: ProductListable[];
+    loading: boolean;
+  };
   description: { value: string; onChange: (v: string) => void };
   sellDate: { value: Date; onChange: (v: Date) => void };
   type: { value: ORDER_TYPE; onChange: (v: ORDER_TYPE) => void };

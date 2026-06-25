@@ -3,8 +3,9 @@ import type { Order } from "@/lib/order";
 import { ORDER_TYPE, OrderTypeTextBuiler } from "@/lib/order-type";
 import { PaymentMethodTextBuilder, PAYMENT_METHOD } from "@/lib/payment-method";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
+import type { AccumulateOrder } from "@/lib/order-list-service";
 import IconButton from "@/ui/components/IconButton/IconButton";
-import Table from "@/ui/components/Table/Table";
+import Table, { type PaginationProps } from "@/ui/components/Table/Table";
 import { Eye, Trash } from "lucide-react";
 import { DeleteOrderModalProps, ViewOrderModalProps } from "../../domain/modal";
 import Decimal from "decimal.js";
@@ -14,9 +15,16 @@ interface Props {
   orders: Order[];
   loading: boolean;
   actions: boolean;
+  /**
+   * Fuente para calcular el acumulado. Cuando se pagina del lado del servidor,
+   * `orders` solo contiene la página actual, por lo que el acumulado se calcula
+   * a partir de este conjunto completo (ligero) de ventas.
+   */
+  accumulateSource?: AccumulateOrder[];
+  pagination?: PaginationProps;
 }
 
-const accumulateAmount = (orders: Order[], ref: Order) => {
+const accumulateAmount = (orders: AccumulateOrder[], ref: Order) => {
   return orders
     .filter((o) => o.type === ORDER_TYPE.SELL)
     .filter(
@@ -33,14 +41,23 @@ const accumulateAmount = (orders: Order[], ref: Order) => {
     }, 0);
 };
 
-export default function SellsTable({ loading, orders, actions }: Props) {
+export default function SellsTable({
+  loading,
+  orders,
+  actions,
+  accumulateSource,
+  pagination,
+}: Props) {
   const { handleOpenModal } = useModal();
+
+  const accumulateData: AccumulateOrder[] = accumulateSource ?? orders;
 
   return (
     <>
       <Table
         loading={loading}
         data={orders}
+        pagination={pagination}
         columns={[
           {
             name: "Fecha de venta",
@@ -89,7 +106,7 @@ export default function SellsTable({ loading, orders, actions }: Props) {
           {
             name: "Acumulado",
             cell: ({ row }) =>
-              PriceTextBuilder.build(accumulateAmount(orders, row)),
+              PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
           },
           {
             render: actions,

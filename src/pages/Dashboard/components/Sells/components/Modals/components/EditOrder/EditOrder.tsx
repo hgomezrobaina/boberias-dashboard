@@ -65,16 +65,7 @@ export default function EditOrder({ order, refetch }: Props) {
           .eq("order_id", order.id)
           .eq("product_id", p.product.id);
 
-        if (e === null) {
-          const { error: se } = await supabase.rpc("increment_product_stock", {
-            product_id_param: p.product.id,
-            product_count: p.count,
-          });
-
-          if (se !== null) {
-            error = true;
-          }
-        } else {
+        if (e !== null) {
           error = true;
         }
       }
@@ -110,21 +101,6 @@ export default function EditOrder({ order, refetch }: Props) {
 
         if (e) {
           error = true;
-        }
-      }
-
-      // update products
-      if (!error) {
-        for (const p of form.orderProducts.value) {
-          const { error: e } = await supabase.rpc("decrement_product_stock", {
-            product_id_param: p.product.id,
-            product_count: p.count,
-          });
-
-          if (e) {
-            error = true;
-            break;
-          }
         }
       }
 

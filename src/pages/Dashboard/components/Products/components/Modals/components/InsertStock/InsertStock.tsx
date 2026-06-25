@@ -27,42 +27,30 @@ export default function InsertStock({ product, refetch }: Props) {
     if (count > 0) {
       setLoading(true);
 
-      const { error: e } = await supabase.rpc("increment_product_stock", {
-        product_id_param: product.id,
-        product_count: count,
-      });
+      const { error: se } = await supabase
+        .from("product_stock_enters")
+        .insert([
+          {
+            count: count,
+            date: date,
+            description: description,
+            product_id: product.id,
+          },
+        ])
+        .select("*");
 
-      if (e !== null) {
+      if (se !== null) {
         toast.error("Hubo un error al insertar la cantidad del producto");
 
         setLoading(false);
       } else {
-        const { error: se } = await supabase
-          .from("product_stock_enters")
-          .insert([
-            {
-              count: count,
-              date: date,
-              description: description,
-              prev_stock: product.stock,
-              product_id: product.id,
-            },
-          ])
-          .select("*");
+        setLoading(false);
 
-        if (se !== null) {
-          toast.error("Hubo un error al insertar la cantidad del producto");
+        toast.success("Cantidad insertada exitosamente");
 
-          setLoading(false);
-        } else {
-          setLoading(false);
+        refetch();
 
-          toast.success("Cantidad insertada exitosamente");
-
-          refetch();
-
-          handleClose();
-        }
+        handleClose();
       }
     } else {
       toast.error("La cantidad a insertar debe ser mayor a 0");

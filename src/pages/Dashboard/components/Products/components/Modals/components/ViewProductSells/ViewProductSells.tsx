@@ -153,22 +153,25 @@ export default function ViewProductSells({ id }: Props) {
   }, [orders, id]);
 
   const data: ProductOperation[] = useMemo(() => {
-    return [
+    // Entradas suman stock, ventas/traslados/mermas lo restan.
+    const operations: (ProductOperation & { delta: number })[] = [
       ...orders.map((r) => {
         const result = r.order_product.find((p) => p.product.id === id);
 
         const count = result ? result.count : null;
-        const prevStock = result ? result.prev_stock : null;
         const price = result ? result.price : null;
+
+        console.log(result);
 
         return {
           date: new Date(r.sell_date),
           type: OrderTypeTextBuiler.execute(r.type),
           count: count,
-          prev_stock: prevStock,
+          prev_stock: null,
           description: r.description,
           price: price,
           original_cost: result ? result.original_cost : null,
+          delta: result ? -result.count : 0,
         };
       }),
       ...enters.map((r) => {
@@ -176,13 +179,28 @@ export default function ViewProductSells({ id }: Props) {
           date: new Date(r.date),
           type: "Entrada",
           count: r.count,
-          prev_stock: r.prev_stock,
+          prev_stock: null,
           description: r.description,
           price: null,
           original_cost: null,
+          delta: r.count,
         };
       }),
     ];
+
+    // De más antigua a más reciente, acumulando el stock previo a cada operación.
+    operations.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    let running = 0;
+    for (const op of operations) {
+      op.prev_stock = running;
+      running += op.delta;
+    }
+
+    // Se muestra de la más reciente a la más antigua.
+    operations.reverse();
+
+    return operations;
   }, [orders, enters, id]);
 
   return (

@@ -30,20 +30,6 @@ export default function DeleteOrder({ order, refetch }: Props) {
       error = true;
     }
 
-    // update products
-    for (const p of order.order_product) {
-      if (error) break;
-
-      const { error: e } = await supabase.rpc("increment_product_stock", {
-        product_id_param: p.product.id,
-        product_count: p.count,
-      });
-
-      if (e) {
-        error = true;
-      }
-    }
-
     if (!error) {
       toast.success("Orden eliminada exitosamente");
 

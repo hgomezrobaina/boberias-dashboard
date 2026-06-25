@@ -4,9 +4,13 @@ import Button from "@/ui/components/Button/Button";
 import useModal from "@/modal/hooks/useModal";
 import { InsertOrderModalProps } from "./domain/modal";
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { type Order } from "@/lib/order";
+import {
+  OrderListService,
+  type AccumulateOrder,
+} from "@/lib/order-list-service";
 import SellsTable from "./components/SellsTable/SellsTable";
+import usePagination from "@/ui/hooks/usePagination";
 
 interface Props {
   month: number;
@@ -16,79 +20,45 @@ interface Props {
 export default function Sells({ month, year }: Props) {
   const { handleOpenModal } = useModal();
 
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [accumulateSource, setAccumulateSource] = useState<AccumulateOrder[]>(
+    [],
+  );
 
-  const refetch = useCallback(() => {
-    setLoading(true);
+  const {
+    data: orders,
+    loading,
+    refetch,
+    page,
+    totalPages,
+    total,
+    canPrev,
+    canNext,
+    nextPage,
+    prevPage,
+  } = usePagination<Order>({
+    fetchPage: ({ from, to }) =>
+      OrderListService.getPage({ from, to, year, month }),
+    deps: [year, month],
+  });
 
-    let request = supabase
-      .from("order")
-      .select(
-        `
-        *, 
-        order_product (
-            product_id,
-            count,
-            price,
-            prev_stock,
-            original_cost,
-            product (
-              id,
-              name,
-              description,
-              stock,
-              cost_price,
-              sell_price,
-              created_at,
-              active,
-              arrive_date,
-              expiration_date,
-              code
-            )
-        ),
-        order_payment_method (
-          method,
-          amount
-        )
-      `,
-      )
-      .order("sell_date", { ascending: false });
-
-    if (year !== -1) {
-      if (month !== -1) {
-        const startDate = new Date(year, month, 1);
-        const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
-
-        request = request
-          .gte("sell_date", startDate.toISOString())
-          .lte("sell_date", endDate.toISOString());
-      } else {
-        const startDate = new Date(year, 0, 1);
-        const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
-
-        request = request
-          .gte("sell_date", startDate.toISOString())
-          .lte("sell_date", endDate.toISOString());
-      }
-    }
-
-    request.then((res) => {
-      if (res.data) {
-        setOrders(res.data);
-      }
-
-      setLoading(false);
-    });
+  const loadAccumulate = useCallback(() => {
+    OrderListService.getAccumulateSource({ year, month }).then(
+      setAccumulateSource,
+    );
   }, [year, month]);
 
   useEffect(() => {
+    loadAccumulate();
+  }, [loadAccumulate]);
+
+  const handleRefetch = useCallback(() => {
     refetch();
-  }, [refetch]);
+    loadAccumulate();
+  }, [refetch, loadAccumulate]);
 
   return (
     <>
-      <Modals refetch={refetch} />
+      <Modals refetch={handleRefetch} />
 
       <Card
         title="Ventas"
@@ -103,7 +73,21 @@ export default function Sells({ month, year }: Props) {
           </>
         }
       >
-        <SellsTable actions loading={loading} orders={orders} />
+        <SellsTable
+          actions
+          loading={loading}
+          orders={orders}
+          accumulateSource={accumulateSource}
+          pagination={{
+            page,
+            totalPages,
+            total,
+            canPrev,
+            canNext,
+            onPrev: prevPage,
+            onNext: nextPage,
+          }}
+        />
       </Card>
     </>
   );

@@ -8,12 +8,25 @@ import {
 } from "@/components/ui/table";
 import Input from "../Input/Input";
 import ContentLoader from "../ContentLoader/ContentLoader";
+import IconButton from "../IconButton/IconButton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+export interface PaginationProps {
+  page: number;
+  totalPages: number;
+  total: number;
+  canPrev: boolean;
+  canNext: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+}
 
 interface Props<T> {
   columns: ColumnDefinition<T>[];
   data: T[];
   loading: boolean;
   search?: { value: string; onChange: (v: string) => void };
+  pagination?: PaginationProps;
 }
 
 interface ColumnDefinition<T> {
@@ -23,7 +36,13 @@ interface ColumnDefinition<T> {
   className?: string;
 }
 
-export default function Table<T>({ columns, data, search, loading }: Props<T>) {
+export default function Table<T>({
+  columns,
+  data,
+  search,
+  loading,
+  pagination,
+}: Props<T>) {
   return (
     <div className="flex flex-col h-max">
       {search && (
@@ -73,6 +92,26 @@ export default function Table<T>({ columns, data, search, loading }: Props<T>) {
             ))}
           </TableBody>
         </LibTable>
+      )}
+
+      {pagination && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-sm text-gray-600">
+            Página {pagination.page} de {pagination.totalPages} ·{" "}
+            {pagination.total} registros
+          </span>
+
+          <div className="flex items-center gap-x-2">
+            <IconButton
+              icon={<ChevronLeft className="w-6 h-6" />}
+              onClick={() => pagination.canPrev && pagination.onPrev()}
+            />
+            <IconButton
+              icon={<ChevronRight className="w-6 h-6" />}
+              onClick={() => pagination.canNext && pagination.onNext()}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

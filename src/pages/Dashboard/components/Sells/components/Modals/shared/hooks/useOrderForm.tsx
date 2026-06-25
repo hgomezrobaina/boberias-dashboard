@@ -6,8 +6,8 @@ import {
 } from "@/lib/order";
 import { ORDER_TYPE } from "@/lib/order-type";
 import { PAYMENT_METHOD } from "@/lib/payment-method";
-import { type Product } from "@/lib/product";
-import { supabase } from "@/lib/supabase";
+import { type ProductListable } from "@/lib/product-listable";
+import { ProductListService } from "@/lib/product-list-service";
 import Decimal from "decimal.js";
 import { useEffect, useMemo, useState } from "react";
 
@@ -17,7 +17,7 @@ interface Props {
 
 export default function useOrderForm({ order }: Props): OrderForm {
   const [productsLoading, setProductsLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductListable[]>([]);
 
   const [sellDate, setSellDate] = useState(
     order ? new Date(order.sell_date) : new Date(),
@@ -50,21 +50,11 @@ export default function useOrderForm({ order }: Props): OrderForm {
   useEffect(() => {
     setProductsLoading(true);
 
-    supabase
-      .from("product")
-      .select("*")
-      .eq("active", true)
-      .gt("stock", 0)
-      .order("id", { ascending: false })
-      .then((res) => {
-        if (res.data) {
-          setProducts(res.data);
-        } else {
-          setProducts([]);
-        }
+    ProductListService.getAll().then((data) => {
+      setProducts(data);
 
-        setProductsLoading(false);
-      });
+      setProductsLoading(false);
+    });
   }, []);
 
   const availableProducts = useMemo(() => {

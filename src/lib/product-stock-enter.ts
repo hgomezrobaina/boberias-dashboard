@@ -4,5 +4,4 @@ export interface ProductStockEnter {
   date: string;
   count: number;
   description: string;
-  prev_stock: number | null;
 }
