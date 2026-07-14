@@ -6,10 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useState } from "react";
 import Input from "../Input/Input";
 import ContentLoader from "../ContentLoader/ContentLoader";
 import IconButton from "../IconButton/IconButton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Button from "../Button/Button";
+import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 export interface PaginationProps {
   page: number;
@@ -27,13 +29,31 @@ interface Props<T> {
   loading: boolean;
   search?: { value: string; onChange: (v: string) => void };
   pagination?: PaginationProps;
+  /**
+   * Exporta el conjunto completo (no solo la página actual) a un `.xlsx`
+   * usando el método `excel` de cada columna. Cuando se provee, se renderiza
+   * un botón de exportación en la barra de herramientas. `filename` es el
+   * nombre del archivo sin extensión.
+   */
+  export?: {
+    onSubmit: (
+      columns: ColumnDefinition<T>[],
+      filename: string,
+    ) => void | Promise<void>;
+    filename: string;
+  };
 }
 
-interface ColumnDefinition<T> {
+export interface ColumnDefinition<T> {
   cell: (props: { row: T; index: number }) => React.ReactNode;
   name: string;
   render?: boolean;
   className?: string;
+  /**
+   * Cómo se exporta esta columna a Excel. Recibe la fila y devuelve el texto
+   * de la celda. Las columnas sin `excel` se omiten de la exportación.
+   */
+  excel?: (row: T) => string;
 }
 
 export default function Table<T>({
@@ -42,10 +62,25 @@ export default function Table<T>({
   search,
   loading,
   pagination,
+  export: exportOptions,
 }: Props<T>) {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!exportOptions) return;
+
+    setExporting(true);
+
+    try {
+      await exportOptions.onSubmit(columns, exportOptions.filename);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-max">
-      {search && (
+      {(search || exportOptions) && (
         <div className="flex w-full mb-3 gap-x-5 justify-between">
           <div className="w-full max-w-[260px]">
             {search && (
@@ -56,7 +91,19 @@ export default function Table<T>({
             )}
           </div>
 
-          <div className="flex items-center"></div>
+          <div className="flex items-center">
+            {exportOptions && (
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                loading={exporting}
+                disabled={loading}
+              >
+                <Download className="w-5 h-5" />
+                {exporting ? "Exportando..." : "Exportar Excel"}
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

@@ -5,7 +5,10 @@ import { PaymentMethodTextBuilder, PAYMENT_METHOD } from "@/lib/payment-method";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
 import type { AccumulateOrder } from "@/lib/order-list-service";
 import IconButton from "@/ui/components/IconButton/IconButton";
-import Table, { type PaginationProps } from "@/ui/components/Table/Table";
+import Table, {
+  type ColumnDefinition,
+  type PaginationProps,
+} from "@/ui/components/Table/Table";
 import { Eye, Trash } from "lucide-react";
 import { DeleteOrderModalProps, ViewOrderModalProps } from "../../domain/modal";
 import Decimal from "decimal.js";
@@ -22,7 +25,37 @@ interface Props {
    */
   accumulateSource?: AccumulateOrder[];
   pagination?: PaginationProps;
+  exportExcel?: (
+    columns: ColumnDefinition<Order>[],
+    filename?: string,
+  ) => void | Promise<void>;
 }
+
+const importeAmount = (order: Order) =>
+  order.order_product.reduce((a, b) => a + b.price * b.count, 0);
+
+const pagoText = (order: Order) => {
+  const filter = (type: PAYMENT_METHOD) => ({
+    type,
+    amount: order.order_payment_method
+      .filter((o) => o.method === type)
+      .reduce((a, b) => a + b.amount, 0),
+  });
+
+  return [
+    filter(PAYMENT_METHOD.CASH),
+    filter(PAYMENT_METHOD.TRANSFER),
+    filter(PAYMENT_METHOD.ONLINE),
+  ]
+    .filter((o) => o.amount > 0)
+    .map((o) => {
+      const type = PaymentMethodTextBuilder.execute(o.type);
+      const amount = PriceTextBuilder.build(o.amount);
+
+      return `${type} (${amount})`;
+    })
+    .join(", ");
+};
 
 const accumulateAmount = (orders: AccumulateOrder[], ref: Order) => {
   return orders
@@ -47,6 +80,7 @@ export default function SellsTable({
   actions,
   accumulateSource,
   pagination,
+  exportExcel,
 }: Props) {
   const { handleOpenModal } = useModal();
 
@@ -58,54 +92,40 @@ export default function SellsTable({
         loading={loading}
         data={orders}
         pagination={pagination}
+        export={
+          exportExcel && { onSubmit: exportExcel, filename: "ventas" }
+        }
         columns={[
           {
             name: "Fecha de venta",
             cell: ({ row }) => DateTextBuilder.build(new Date(row.sell_date)),
+            excel: (row) => DateTextBuilder.build(new Date(row.sell_date)),
           },
-          { name: "Descripción", cell: ({ row }) => row.description },
+          {
+            name: "Descripción",
+            cell: ({ row }) => row.description,
+            excel: (row) => row.description,
+          },
           {
             name: "Tipo",
             cell: ({ row }) => OrderTypeTextBuiler.execute(row.type),
+            excel: (row) => OrderTypeTextBuiler.execute(row.type),
           },
           {
             name: "Importe",
-            cell: ({ row }) => {
-              return PriceTextBuilder.build(
-                row.order_product.reduce((a, b) => a + b.price * b.count, 0),
-              );
-            },
+            cell: ({ row }) => PriceTextBuilder.build(importeAmount(row)),
+            excel: (row) => PriceTextBuilder.build(importeAmount(row)),
           },
           {
             name: "Pago",
-            cell: ({ row }) => {
-              const filter = (type: PAYMENT_METHOD) => {
-                return {
-                  type: type,
-                  amount: row.order_payment_method
-                    .filter((o) => o.method === type)
-                    .reduce((a, b) => a + b.amount, 0),
-                };
-              };
-
-              return [
-                filter(PAYMENT_METHOD.CASH),
-                filter(PAYMENT_METHOD.TRANSFER),
-                filter(PAYMENT_METHOD.ONLINE),
-              ]
-                .filter((o) => o.amount > 0)
-                .map((o) => {
-                  const type = PaymentMethodTextBuilder.execute(o.type);
-                  const amount = PriceTextBuilder.build(o.amount);
-
-                  return `${type} (${amount})`;
-                })
-                .join(", ");
-            },
+            cell: ({ row }) => pagoText(row),
+            excel: (row) => pagoText(row),
           },
           {
             name: "Acumulado",
             cell: ({ row }) =>
+              PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
+            excel: (row) =>
               PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
           },
           {

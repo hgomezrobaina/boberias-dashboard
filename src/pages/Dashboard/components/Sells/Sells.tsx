@@ -35,6 +35,7 @@ export default function Sells({ month, year }: Props) {
     canNext,
     nextPage,
     prevPage,
+    handleExportExcel,
   } = usePagination<Order>({
     fetchPage: ({ from, to }) =>
       OrderListService.getPage({ from, to, year, month }),
@@ -78,6 +79,7 @@ export default function Sells({ month, year }: Props) {
           loading={loading}
           orders={orders}
           accumulateSource={accumulateSource}
+          exportExcel={handleExportExcel}
           pagination={{
             page,
             totalPages,

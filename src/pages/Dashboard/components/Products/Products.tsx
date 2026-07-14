@@ -38,9 +38,11 @@ export default function Products() {
     canNext,
     nextPage,
     prevPage,
+    handleExportExcel,
   } = usePagination<ProductListable>({
-    fetchPage: ({ from, to, search }) =>
-      ProductListService.getPage({ from, to, search }),
+    fetchPage: ({ from, to, search }) => {
+      return ProductListService.getPage({ from, to, search });
+    },
   });
 
   return (
@@ -64,6 +66,7 @@ export default function Products() {
           search={{ onChange: setSearch, value: search }}
           loading={loading}
           data={products}
+          export={{ onSubmit: handleExportExcel, filename: "productos" }}
           pagination={{
             page,
             totalPages,
@@ -74,19 +77,30 @@ export default function Products() {
             onNext: nextPage,
           }}
           columns={[
-            { cell: ({ row }) => row.code, name: "Código" },
-            { cell: ({ row }) => row.name, name: "Nombre" },
+            {
+              cell: ({ row }) => row.code,
+              name: "Código",
+              excel: (row) => row.code,
+            },
+            {
+              cell: ({ row }) => row.name,
+              name: "Nombre",
+              excel: (row) => row.name,
+            },
             {
               name: "Precio de venta",
               cell: ({ row }) => PriceTextBuilder.build(row.sell_price),
+              excel: (row) => PriceTextBuilder.build(row.sell_price),
             },
             {
               name: "Precio de costo",
               cell: ({ row }) => PriceTextBuilder.build(row.cost_price),
+              excel: (row) => PriceTextBuilder.build(row.cost_price),
             },
             {
               name: "Cantidad",
               cell: ({ row }) => NumberTextBuilder.execute(row.stock),
+              excel: (row) => NumberTextBuilder.execute(row.stock),
             },
             {
               name: "",

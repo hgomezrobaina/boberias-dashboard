@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import * as XLSX from "xlsx";
+import type { ColumnDefinition } from "@/ui/components/Table/Table";
 
 export interface PaginationFetchParams {
   from: number;
@@ -44,6 +46,15 @@ export interface UsePagination<T> {
   canPrev: boolean;
   canNext: boolean;
   refetch: () => void;
+  /**
+   * Genera y descarga un `.xlsx` con TODO el conjunto que cumple el filtro
+   * actual (no solo la página en pantalla), usando el método `excel` de cada
+   * columna. Las columnas sin `excel` se omiten.
+   */
+  handleExportExcel: (
+    columns: ColumnDefinition<T>[],
+    filename?: string,
+  ) => Promise<void>;
 }
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -128,6 +139,47 @@ export default function usePagination<T>({
       });
   };
 
+  const handleExportExcel = async (
+    columns: ColumnDefinition<T>[],
+    filename = "export",
+  ) => {
+    const exportable = columns.filter((c) => c.excel);
+
+    if (exportable.length === 0) return;
+
+    // Trae todo el conjunto que cumple el filtro actual. Primero una consulta
+    // ligera para conocer el total y luego el rango completo.
+    const first = await fetchRef.current({
+      from: 0,
+      to: pageSize - 1,
+      page: 1,
+      pageSize,
+      search: debouncedSearch,
+    });
+
+    const rows =
+      first.count <= first.data.length
+        ? first.data
+        : (
+            await fetchRef.current({
+              from: 0,
+              to: first.count - 1,
+              page: 1,
+              pageSize: first.count,
+              search: debouncedSearch,
+            })
+          ).data;
+
+    const header = exportable.map((c) => c.name);
+    const body = rows.map((row) => exportable.map((c) => c.excel!(row)));
+
+    const worksheet = XLSX.utils.aoa_to_sheet([header, ...body]);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+    XLSX.writeFile(workbook, `${filename}.xlsx`);
+  };
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -147,5 +199,6 @@ export default function usePagination<T>({
     canPrev,
     canNext,
     refetch,
+    handleExportExcel,
   };
 }
