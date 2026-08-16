@@ -48,11 +48,13 @@ export default function SearchSelect({
           style={{ maxWidth: width ? `${width}px` : undefined }}
           className="w-full justify-between"
         >
-          {ivalue.value
-            ? options.find((framework) => framework.value === ivalue.value)
-                ?.label
-            : placeholder}
-          <ChevronsUpDown className="opacity-50" />
+          <span className="truncate text-left">
+            {ivalue.value
+              ? options.find((framework) => framework.value === ivalue.value)
+                  ?.label
+              : placeholder}
+          </span>
+          <ChevronsUpDown className="opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent

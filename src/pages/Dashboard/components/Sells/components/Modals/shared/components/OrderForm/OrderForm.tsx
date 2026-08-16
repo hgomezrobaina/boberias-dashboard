@@ -99,6 +99,7 @@ export default function OrderForm({ form }: Props) {
           columns={[
             {
               name: "Producto",
+              className: "w-1/2 max-w-0",
               cell: ({ index, row }) => (
                 <SearchSelect
                   criteria={(id, search) => handleSearch(row, id, search)}
@@ -122,6 +123,7 @@ export default function OrderForm({ form }: Props) {
             },
             {
               name: "Cantidad",
+              className: "w-[22%]",
               cell: ({ row: o }) => (
                 <InputNumber
                   min={1}
@@ -135,6 +137,7 @@ export default function OrderForm({ form }: Props) {
             },
             {
               name: "Precio",
+              className: "w-[22%]",
               cell: ({ row }) => (
                 <InputNumber
                   min={1}
@@ -148,6 +151,7 @@ export default function OrderForm({ form }: Props) {
             },
             {
               name: "",
+              className: "w-[6%]",
               cell: ({ row: o }) => (
                 <IconButton
                   icon={<Trash className="w-5 h-5" />}

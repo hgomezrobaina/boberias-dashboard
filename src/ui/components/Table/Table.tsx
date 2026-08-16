@@ -119,9 +119,13 @@ export default function Table<T>({
         <LibTable className="">
           <TableHeader>
             <TableRow>
-              {columns.map((c, index) => (
-                <TableHead key={index}>{c.name}</TableHead>
-              ))}
+              {columns
+                .filter((c) => c.render === undefined || c.render === true)
+                .map((c, index) => (
+                  <TableHead key={index} className={c.className}>
+                    {c.name}
+                  </TableHead>
+                ))}
             </TableRow>
           </TableHeader>
 
