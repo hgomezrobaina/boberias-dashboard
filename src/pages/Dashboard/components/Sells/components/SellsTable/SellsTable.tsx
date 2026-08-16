@@ -9,10 +9,17 @@ import Table, {
   type ColumnDefinition,
   type PaginationProps,
 } from "@/ui/components/Table/Table";
-import { Eye, Trash } from "lucide-react";
-import { DeleteOrderModalProps, ViewOrderModalProps } from "../../domain/modal";
+import { Edit, Eye, Trash } from "lucide-react";
+import {
+  DeleteOrderModalProps,
+  EditOrderModalProps,
+  ViewOrderModalProps,
+} from "../../domain/modal";
 import Decimal from "decimal.js";
 import useModal from "@/modal/hooks/useModal";
+import { useContext } from "react";
+import { UserContext } from "@/user/context/user-context";
+import { USER_ROLE } from "@/lib/user-role";
 
 interface Props {
   orders: Order[];
@@ -82,6 +89,7 @@ export default function SellsTable({
   pagination,
   exportExcel,
 }: Props) {
+  const { role } = useContext(UserContext);
   const { handleOpenModal } = useModal();
 
   const accumulateData: AccumulateOrder[] = accumulateSource ?? orders;
@@ -92,9 +100,7 @@ export default function SellsTable({
         loading={loading}
         data={orders}
         pagination={pagination}
-        export={
-          exportExcel && { onSubmit: exportExcel, filename: "ventas" }
-        }
+        export={exportExcel && { onSubmit: exportExcel, filename: "ventas" }}
         columns={[
           {
             name: "Fecha de venta",
@@ -135,10 +141,16 @@ export default function SellsTable({
               <div className="flex items-center gap-x-2">
                 <IconButton
                   icon={<Eye className="w-6 h-6" />}
-                  onClick={() =>
-                    handleOpenModal(new ViewOrderModalProps(row))
-                  }
+                  onClick={() => handleOpenModal(new ViewOrderModalProps(row))}
                 />
+
+                {role === USER_ROLE.ADMIN && (
+                  <IconButton
+                    icon={<Edit className="w-6 h-6" />}
+                    onClick={() => handleOpenModal(new EditOrderModalProps(row))}
+                  />
+                )}
+
                 <IconButton
                   icon={<Trash className="w-6 h-6" />}
                   onClick={() =>
