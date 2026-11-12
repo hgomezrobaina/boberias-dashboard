@@ -126,7 +126,7 @@ export default function SellsTable({
             name: "Importe",
             cell: ({ row }) => PriceTextBuilder.build(importeAmount(row)),
             excel: (row) => importeAmount(row),
-            excelFormat: EXCEL_FORMAT.CURRENCY,
+            excelFormat: EXCEL_FORMAT.PRICE,
           },
           {
             name: "Pago",
@@ -138,7 +138,7 @@ export default function SellsTable({
             cell: ({ row }) =>
               PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
             excel: (row) => accumulateAmount(accumulateData, row),
-            excelFormat: EXCEL_FORMAT.CURRENCY,
+            excelFormat: EXCEL_FORMAT.PRICE,
           },
           {
             render: actions,

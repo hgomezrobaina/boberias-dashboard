@@ -92,13 +92,13 @@ export default function Products() {
               name: "Precio de venta",
               cell: ({ row }) => PriceTextBuilder.build(row.sell_price),
               excel: (row) => row.sell_price,
-              excelFormat: EXCEL_FORMAT.CURRENCY,
+              excelFormat: EXCEL_FORMAT.PRICE,
             },
             {
               name: "Precio de costo",
               cell: ({ row }) => PriceTextBuilder.build(row.cost_price),
               excel: (row) => row.cost_price,
-              excelFormat: EXCEL_FORMAT.CURRENCY,
+              excelFormat: EXCEL_FORMAT.PRICE,
             },
             {
               name: "Cantidad",
