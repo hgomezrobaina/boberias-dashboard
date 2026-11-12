@@ -44,16 +44,31 @@ interface Props<T> {
   };
 }
 
+/**
+ * Valor que se escribe en una celda de la exportación. Los `number` y `Date`
+ * se guardan como números reales (no como texto), así que se pueden usar en
+ * fórmulas, sumas y ordenamientos dentro de Excel. `null` deja la celda vacía.
+ */
+export type ExcelCellValue = string | number | Date | null;
+
 export interface ColumnDefinition<T> {
   cell: (props: { row: T; index: number }) => React.ReactNode;
   name: string;
   render?: boolean;
   className?: string;
   /**
-   * Cómo se exporta esta columna a Excel. Recibe la fila y devuelve el texto
-   * de la celda. Las columnas sin `excel` se omiten de la exportación.
+   * Cómo se exporta esta columna a Excel. Recibe la fila y devuelve el valor
+   * crudo de la celda: devolver un `number` (o `Date`) en lugar de texto ya
+   * formateado es lo que permite hacer fórmulas con la celda. El formato
+   * visual se declara aparte, en `excelFormat`. Las columnas sin `excel` se
+   * omiten de la exportación.
    */
-  excel?: (row: T) => string;
+  excel?: (row: T) => ExcelCellValue;
+  /**
+   * Formato de número de Excel para las celdas de esta columna (ver
+   * `EXCEL_FORMAT`). Solo aplica a celdas numéricas.
+   */
+  excelFormat?: string;
 }
 
 export default function Table<T>({

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import type { ColumnDefinition } from "@/ui/components/Table/Table";
+import type {
+  ColumnDefinition,
+  ExcelCellValue,
+} from "@/ui/components/Table/Table";
 
 export interface PaginationFetchParams {
   from: number;
@@ -49,7 +52,9 @@ export interface UsePagination<T> {
   /**
    * Genera y descarga un `.xlsx` con TODO el conjunto que cumple el filtro
    * actual (no solo la página en pantalla), usando el método `excel` de cada
-   * columna. Las columnas sin `excel` se omiten.
+   * columna. Las columnas sin `excel` se omiten. Los valores numéricos y las
+   * fechas se escriben como números con formato, no como texto, para que las
+   * celdas sirvan en fórmulas.
    */
   handleExportExcel: (
     columns: ColumnDefinition<T>[],
@@ -58,6 +63,25 @@ export interface UsePagination<T> {
 }
 
 const DEFAULT_PAGE_SIZE = 10;
+
+const CELL_WIDTH_MIN = 10;
+const CELL_WIDTH_MAX = 40;
+const DATE_CELL_WIDTH = 12;
+
+/** Ancho aproximado de la columna, para que un número no se muestre como `###`. */
+function columnWidth(name: string, values: ExcelCellValue[]): number {
+  const lengths = values.map((value) => {
+    if (value === null || value === undefined) return 0;
+    if (value instanceof Date) return DATE_CELL_WIDTH;
+    if (typeof value === "number") return value.toLocaleString("en-US").length;
+
+    return value.length;
+  });
+
+  const longest = Math.max(name.length, CELL_WIDTH_MIN, ...lengths);
+
+  return Math.min(CELL_WIDTH_MAX, longest + 2);
+}
 
 export default function usePagination<T>({
   fetchPage,
@@ -173,7 +197,31 @@ export default function usePagination<T>({
     const header = exportable.map((c) => c.name);
     const body = rows.map((row) => exportable.map((c) => c.excel!(row)));
 
+    // `aoa_to_sheet` tipa un `number` como celda numérica y una `Date` como su
+    // número de serie, así que las celdas quedan operables en Excel.
     const worksheet = XLSX.utils.aoa_to_sheet([header, ...body]);
+
+    exportable.forEach((column, columnIndex) => {
+      if (!column.excelFormat) return;
+
+      for (let rowIndex = 1; rowIndex <= body.length; rowIndex++) {
+        const cell = worksheet[
+          XLSX.utils.encode_cell({ c: columnIndex, r: rowIndex })
+        ] as XLSX.CellObject | undefined;
+
+        if (cell?.t !== "n") continue;
+
+        cell.z = column.excelFormat;
+      }
+    });
+
+    worksheet["!cols"] = exportable.map((column, columnIndex) => ({
+      wch: columnWidth(
+        column.name,
+        body.map((row) => row[columnIndex]),
+      ),
+    }));
+
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");

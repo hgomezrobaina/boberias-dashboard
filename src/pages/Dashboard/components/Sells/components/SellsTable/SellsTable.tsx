@@ -3,6 +3,7 @@ import type { Order } from "@/lib/order";
 import { ORDER_TYPE, OrderTypeTextBuiler } from "@/lib/order-type";
 import { PaymentMethodTextBuilder, PAYMENT_METHOD } from "@/lib/payment-method";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
+import { EXCEL_FORMAT } from "@/lib/excel-format";
 import type { AccumulateOrder } from "@/lib/order-list-service";
 import IconButton from "@/ui/components/IconButton/IconButton";
 import Table, {
@@ -16,6 +17,7 @@ import {
   ViewOrderModalProps,
 } from "../../domain/modal";
 import Decimal from "decimal.js";
+import { startOfDay } from "date-fns";
 import useModal from "@/modal/hooks/useModal";
 import { useContext } from "react";
 import { UserContext } from "@/user/context/user-context";
@@ -105,7 +107,10 @@ export default function SellsTable({
           {
             name: "Fecha de venta",
             cell: ({ row }) => DateTextBuilder.build(new Date(row.sell_date)),
-            excel: (row) => DateTextBuilder.build(new Date(row.sell_date)),
+            // Sin la hora, para que la celda se pueda comparar con una fecha
+            // exacta en una fórmula.
+            excel: (row) => startOfDay(new Date(row.sell_date)),
+            excelFormat: EXCEL_FORMAT.DATE,
           },
           {
             name: "Descripción",
@@ -120,7 +125,8 @@ export default function SellsTable({
           {
             name: "Importe",
             cell: ({ row }) => PriceTextBuilder.build(importeAmount(row)),
-            excel: (row) => PriceTextBuilder.build(importeAmount(row)),
+            excel: (row) => importeAmount(row),
+            excelFormat: EXCEL_FORMAT.CURRENCY,
           },
           {
             name: "Pago",
@@ -131,8 +137,8 @@ export default function SellsTable({
             name: "Acumulado",
             cell: ({ row }) =>
               PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
-            excel: (row) =>
-              PriceTextBuilder.build(accumulateAmount(accumulateData, row)),
+            excel: (row) => accumulateAmount(accumulateData, row),
+            excelFormat: EXCEL_FORMAT.CURRENCY,
           },
           {
             render: actions,

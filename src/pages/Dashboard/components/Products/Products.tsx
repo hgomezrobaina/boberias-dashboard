@@ -1,5 +1,6 @@
 import { NumberTextBuilder } from "@/lib/number-text-builder";
 import { PriceTextBuilder } from "@/lib/price-text-builder";
+import { EXCEL_FORMAT } from "@/lib/excel-format";
 import Button from "@/ui/components/Button/Button";
 import Card from "@/ui/components/Card/Card";
 import Table from "@/ui/components/Table/Table";
@@ -90,17 +91,20 @@ export default function Products() {
             {
               name: "Precio de venta",
               cell: ({ row }) => PriceTextBuilder.build(row.sell_price),
-              excel: (row) => PriceTextBuilder.build(row.sell_price),
+              excel: (row) => row.sell_price,
+              excelFormat: EXCEL_FORMAT.CURRENCY,
             },
             {
               name: "Precio de costo",
               cell: ({ row }) => PriceTextBuilder.build(row.cost_price),
-              excel: (row) => PriceTextBuilder.build(row.cost_price),
+              excel: (row) => row.cost_price,
+              excelFormat: EXCEL_FORMAT.CURRENCY,
             },
             {
               name: "Cantidad",
               cell: ({ row }) => NumberTextBuilder.execute(row.stock),
-              excel: (row) => NumberTextBuilder.execute(row.stock),
+              excel: (row) => row.stock,
+              excelFormat: EXCEL_FORMAT.NUMBER,
             },
             {
               name: "",
